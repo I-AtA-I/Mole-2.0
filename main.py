@@ -101,17 +101,6 @@ sleep(4)
 scanverify = "no"
 #ask for password to start the program else exit
 
-while True:
-    askforpassword = getpass.getpass(prompt = "Enter password for the program to start: ")
-    sleep(0.1)
-    if askforpassword != "krtek":
-        print(Fore.RED + "Incorrect password...")
-        sleep(0.5)
-    else:
-        print(Fore.GREEN + "Password correct, starting program...")
-        sleep(0.5)
-        break
-
 logging.info(f"Program accessed with correct password")
 
 cls()
@@ -148,8 +137,6 @@ while True:
     print("6) Run diskfiller to fill up disk space")
     sleep(0.1)
     print("7) Localy host a disk of the target machine")
-    sleep(0.1)
-    print(" ")
     sleep(0.1)
     print("8) Generate a new admin account on target machine")
     sleep(0.1)
