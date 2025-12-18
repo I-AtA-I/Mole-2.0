@@ -361,8 +361,7 @@ while True:
     if action == "5":
         logging.info(f"Chosen action 5 to check IP connectivity and response")
         targetip=input("Enter target IP to ping: ")
-        pingcommand="ping " + targetip
-        run_ps(pingcommand)
+        subprocess.run(["ping", targetip])
         logging.info(f"Pinging the target machine")
         
     if action == "6":
