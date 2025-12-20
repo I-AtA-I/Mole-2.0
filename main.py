@@ -188,6 +188,16 @@ while True:
         sleep(0.1)
         print("5) Check IP connectivity and response: pings target/attacker IP to check connectivity and response time")
         sleep(0.1)
+        print("6) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine")
+        sleep(0.1)
+        print("7) Localy host a disk of the target machine: hosts current folder via python http server on port 8100")
+        sleep(0.1)
+        print("8) Generate a new admin account on target machine")
+        sleep(0.1)
+        print("9) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser")
+        sleep(0.1)
+        print(" ")
+        print("99) To exit the program")
         input("Press Enter to continue...")
 
 #
