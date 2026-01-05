@@ -857,6 +857,19 @@ if action == "ForkBomb":
     run_ps('Start-Process -FilePath "Friend.bat" -WindowStyle Hidden')
         
         
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
     
     
 #Action exit = exiting the program
