@@ -59,21 +59,9 @@ while True:
 
 logging.info(f"Program started")
 
-
-
-#trying to find powershell path
-def find_powershell():
-    # Try PowerShell Core first
-    pwsh_path = r"C:\Program Files\PowerShell\7\pwsh.exe"
-    if os.path.exists(pwsh_path):
-        return pwsh_path
-
-    # Fallback to Windows PowerShell
-    ps_path = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-    if os.path.exists(ps_path):
-        return ps_path
-
-    raise FileNotFoundError("No PowerShell executable found")
+def print_line(char="="):
+    terminal_width = os.get_terminal_size().columns
+    print(char * terminal_width)
 
 #defining "run_ps" command to bypass subprocess.run error and PowerShell path not being able to be located
 def run_ps(command):
@@ -120,6 +108,7 @@ print(" ")
 print("Welcome, ")
 while True:
     print("Choose your action: ")
+    print_line()
     print("result) Print current machine scan outcome (only usable after action 1)") 
     sleep(0.1) 
     print("")
@@ -153,6 +142,9 @@ while True:
     sleep(0.1)
     print("help) Show available actions")
     sleep(0.1)
+    print_line()
+    sleep(0.1)
+    print("")
     action = input("M0L€> ")
     cls()
 
