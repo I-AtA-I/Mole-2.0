@@ -851,6 +851,8 @@ while True:
     #
     #
     # 
+
+    
     #Action exit = exiting the program
         if action == "exit":
             logging.info(f"Chosen action PassExport to exit the program")
