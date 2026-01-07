@@ -1,5 +1,4 @@
 @echo off
-Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe
 
 winget install python3 --accept-source-agreements --accept-package-agreements
 python -m pip install pycryptodome
