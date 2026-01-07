@@ -890,6 +890,8 @@ while True:
 
         exit()
 
+#INFOS!
+    
     if action == "info result":
         print("result) Print current machine scan outcome (only usable after action 'scan'), usable for seeing scan results without having to rescan the machine") 
         sleep(0.1) 
