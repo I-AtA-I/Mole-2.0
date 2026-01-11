@@ -79,15 +79,12 @@ def run_ps(command):
 permapath = r'[Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";C:\Windows\System32\OpenSSH", [System.EnvironmentVariableTarget]::Machine)'
 run_ps(permapath)
 
-#define powershell path
-pspath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
-
 print(Fore.YELLOW + "!!!THIS PROGRAM IS NEEDED TO "+ Fore.RED + "RUN VIA CMD WITH ADMIN PRIVILEGES " + Fore.YELLOW + "TO RUN PROPERLY!!!")
 sleep(4)
 
-#scanverify = if you dont understand go to action 0, it verifies if the scan was initiated first
+#scanverify = if you dont understand go to action 'scan', it verifies if the scan was initiated first
 scanverify = "no"
-#ask for password to start the program else exit
+
 
 logging.info(f"Program accessed with correct password")
 
@@ -104,7 +101,7 @@ print(Fore.RED + ascii_art)
 sleep(2)
 print(" ")
 
-#ask to scan the machine whilst if "y" then gather system information else if "n" ask to continue else exit
+
 print("Welcome, ")
 while True:
     print("Choose your action: ")
@@ -149,7 +146,7 @@ while True:
     print_line()
     sleep(0.1)
     print("")
-    action = input("M0L€> " + "")
+    action = input(Fore.YELLOW+"M0L€> " + Fore.WHITE+"")
     cls()
 
     
