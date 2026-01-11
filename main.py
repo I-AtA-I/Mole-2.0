@@ -134,6 +134,9 @@ while True:
     print("ForkBomb) Attempt a forkbomb on current machine")
     sleep(0.1)
     print("PortOpener) Open ports in firewall and takes down windows defender protection")
+    sleep(0.1)
+    print("PacketCapture) Capture network packets on target machine")
+    sleep(0.1)
     print(" ")
     sleep(0.1)
     print("exit) To exit the program")
@@ -222,10 +225,13 @@ while True:
         sleep(0.1)
         print("")
         sleep(0.1)
+        print("PortOpener) Open ports in firewall, takes down windows defender protection. deletes all existing firewall rules")
+        sleep(0.1)
+        print("")
+        sleep(0.1)
         print("exit) To exit the program")
         sleep(0.1)
         print("")
-        print("PortOpener) Open ports in firewall, takes down windows defender protection. deletes all existing firewall rules")
         print_line()
         input("Press Enter to continue...")
 
@@ -883,7 +889,7 @@ while True:
     #
     # 
 
-
+#action PortOpener = opening ports in firewall
     if action == "PortOpener":
         logging.info(f"Chosen action PortOpener to open ports in firewall")
         PortOpenerContinue=input("This action will take down the entire firewall and windows defender protection, are you sure you want to continue?")
@@ -927,27 +933,29 @@ while True:
             input("Press Enter to continue...")
 
 
+
+#action PacketCapture = capturing packets on target machine
     if action == "PacketCapture":
         logging.info(f"Chosen action PacketCapture to capture packets")
         run_ps('& "C:\\Program Files\\Wireshark\\dumpcap.exe" -D')
 
-        interface_select = input("Enter network interface to capture packets on (run 'ipconfig' to see available interfaces): ")
+        interface_select = input("Enter network interface to capture packets on (Choose from the list): ")
 
         tcp_capture = f'& "C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w test.pcapng'
         run_ps(tcp_capture)
 
         logging.info(f"Started packet capture on interface: {interface_select}")
         print("Packet capture started, to stop it press CTRL+C in this window")
+        input("Press Enter to continue...")
 
-    interface_select = input("Enter network interface to capture packets on (run 'ipconfig' to see available interfaces): ")
-
-    tcp_capture = f'"C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w test.pcapng'
-    run_ps(tcp_capture)
-
-    logging.info(f"Started packet capture on interface: {interface_select}")
-    print("Packet capture started, to stop it press CTRL+C in this window")
-    print("Packet capture started, to stop it press CTRL+C in this window")
-
+#
+#
+#
+#
+#
+#
+#
+#
 #
 #
    #Action exit = exiting the program
@@ -1057,6 +1065,13 @@ while True:
         input("Press Enter to continue...")
         cls()
     
+    if action == "info PacketCapture":
+        print("PacketCapture) Capture packets on target machine: uses Wireshark's dumpcap to capture network packets on a specified interface and save them to a pcapng file") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
 
     else:
         print("Invalid action, please choose a valid command or select 'help' to see available actions.")
