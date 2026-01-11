@@ -927,17 +927,29 @@ while True:
             input("Press Enter to continue...")
 
 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+    if action == "PacketCapture":
+        logging.info(f"Chosen action PacketCapture to capture packets")
+        run_ps('& "C:\\Program Files\\Wireshark\\dumpcap.exe" -D')
 
+        interface_select = input("Enter network interface to capture packets on (run 'ipconfig' to see available interfaces): ")
+
+        tcp_capture = f'& "C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w test.pcapng'
+        run_ps(tcp_capture)
+
+        logging.info(f"Started packet capture on interface: {interface_select}")
+        print("Packet capture started, to stop it press CTRL+C in this window")
+
+    interface_select = input("Enter network interface to capture packets on (run 'ipconfig' to see available interfaces): ")
+
+    tcp_capture = f'"C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w test.pcapng'
+    run_ps(tcp_capture)
+
+    logging.info(f"Started packet capture on interface: {interface_select}")
+    print("Packet capture started, to stop it press CTRL+C in this window")
+    print("Packet capture started, to stop it press CTRL+C in this window")
+
+#
+#
    #Action exit = exiting the program
     if action == "exit":
         logging.info(f"Chosen action PassExport to exit the program")
