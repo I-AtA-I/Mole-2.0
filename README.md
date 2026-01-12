@@ -21,8 +21,9 @@ etc/ssh/sshd_config!!!
 Steps:
 -
 1) Download the files on your attacker computer
-2) Put main.py and setup.bat on a flashdisk you will be using to plug into the target computer
-3) plug the flash disk into the target computer
-4) run setup.bat on the target machine installing python onto it (takes a few seconds)
-5) open admin powershell and start main.py
+2) run 'attackersetup.sh' on your attacking machine
+3) Put main.py and setup.bat on a flashdisk you will be using to plug into the target computer
+4) plug the flash disk into the target computer
+5) run setup.bat on the target machine installing python onto it (takes a few seconds)
+6) open admin CMD and start main.py
 
