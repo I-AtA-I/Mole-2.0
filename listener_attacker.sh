@@ -49,7 +49,7 @@ if [ "$setupvenom" != "n" ]; then
     echo "Payload generated as payload.exe"
     mkdir VenomPayload
     mv payload.exe VenomPayload/
-    echo "Payload moved to VenomPayload directory."
+    echo "Payload moved to VenomPayload directory, if you wish to move it to a different path you can do so."
   done
 else
     echo "Skipping MSFVenom payload generation..."
