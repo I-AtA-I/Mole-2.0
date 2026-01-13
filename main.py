@@ -40,6 +40,7 @@ def get_password_hash():
         with open(CONFIG_FILE, "w") as f:
             json.dump({"password_hash": hash_pw(pw)}, f)
         print("Password saved.")
+        return hashed_pw
     else:
         with open(CONFIG_FILE) as f:
             return json.load(f)["password_hash"]
