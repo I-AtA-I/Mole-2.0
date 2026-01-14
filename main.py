@@ -123,6 +123,8 @@ print("Welcome, ")
 while True:
     print("Choose your action: ")
     print_line()
+    sleep(0.1)
+    print(" ")
     MENU = {
         "System & Scan": [
             "result - Print current machine scan outcome",
@@ -158,7 +160,7 @@ while True:
                 print("  " + item)
             print()
 
-
+    print_menu()
     print_line()
     sleep(0.1)
     print("")
