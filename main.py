@@ -123,6 +123,8 @@ print("Welcome, ")
 while True:
     print("Choose your action: ")
     print_line()
+    sleep(0.1)
+    print(" ")
     MENU = {
         "System & Scan": [
             "result - Print current machine scan outcome",
@@ -158,7 +160,7 @@ while True:
                 print("  " + item)
             print()
 
-
+    print_menu()
     print_line()
     sleep(0.1)
     print("")
@@ -248,6 +250,9 @@ while True:
         print("Venom) Run a Venom payload: allows execution of a specified Venom-generated payload on the target machine")
         sleep(0.1)
         print("")
+        sleep(0.1)
+        print("LogDelete) Delete the program log file: removes the logger.log file created by the program to store logs")
+        sleep(0.1)
         print("exit) To exit the program")
         sleep(0.1)
         print("")
@@ -1024,7 +1029,7 @@ while True:
 #
 
 
-    if action =="LogDelete" or action == "logdelete":
+    if action =="DeleteLog" or action == "deletelog":
         logging.shutdown()
         os.remove("logger.log")
 
@@ -1158,6 +1163,14 @@ while True:
 
     if action == "info Venom" or action == "info venom":
         print("Venom) Run a Venom payload: allows the execution of an .exe file which was generated using MSFVenom and saved into VenomPayload using attackersetup.sh") 
+        sleep(0.1) 
+        print("")
+        sleep(0.1)
+        input("Press Enter to continue...")
+        cls()
+
+    if action == "info LogDelete" or action == "info logdelete":
+        print("LogDelete) Delete the program log file: removes the logger.log file created by the program to store logs") 
         sleep(0.1) 
         print("")
         sleep(0.1)
