@@ -22,11 +22,23 @@ from datetime import datetime, timedelta
 import json
 import win32crypt # type: ignore
 
-logging.basicConfig(
-    filename="logger.log",     # log file name
-    level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
+while True:
+    cls()
+    asktolog=input("Enable logging? y/n: ")
+    if asktolog == "y": 
+        logging.basicConfig(
+            filename="logger.log",     # log file name
+            level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
+            format="%(asctime)s - %(levelname)s - %(message)s"
+        )
+        break
+    elif asktolog == "n":
+        print("Logging disabled")
+        break
+    else:
+        print("Invalid input, please enter y or n")
+        sleep(1)
+
 
 CONFIG_FILE = "config.json"
 
@@ -1016,12 +1028,8 @@ while True:
 
 
     if action =="LogDelete" or action == "logdelete":
-        logging.info(f"Chosen action LogDelete to delete event logs on target machine")
-        delete_logs="wevtutil cl System & wevtutil cl Security & wevtutil cl Application"
-        run_ps(delete_logs)
-        print("Event logs deleted")
-        sleep(2)
-        input("Press Enter to continue...")
+        logging.shutdown()
+        os.remove("logger.log")
 
 
 #
@@ -1146,7 +1154,7 @@ while True:
     if action == "info PacketCapture" or action == "info packetcapture":
         print("PacketCapture) Capture packets on target machine: uses Wireshark's dumpcap to capture network packets on a specified interface and save them to a pcapng file") 
         sleep(0.1) 
-        print("")
+        print("")   
         sleep(0.1)
         input("Press Enter to continue...")
         cls()
