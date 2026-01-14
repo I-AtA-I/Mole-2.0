@@ -25,14 +25,15 @@ import win32crypt # type: ignore
 while True:
     cls()
     asktolog=input("Enable logging? y/n: ")
-    if asktolog == "y": 
+    if asktolog == "y" or asktolog == "Y":
+        print("Logging enabled")
         logging.basicConfig(
             filename="logger.log",     # log file name
             level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
             format="%(asctime)s - %(levelname)s - %(message)s"
         )
         break
-    elif asktolog == "n":
+    elif asktolog == "n" or asktolog == "N":
         print("Logging disabled")
         break
     else:
