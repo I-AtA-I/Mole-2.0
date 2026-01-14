@@ -423,8 +423,8 @@ while True:
 				
 			    # Get absolute path and open in browser
                 hook_path = os.path.abspath("beef_hook.html")
-                webbrowser.open(f"file://{hook_path}")
-				
+                hook_url = "file:///" + hook_path.replace("\\", "/")
+                webbrowser.open(hook_url)
                 print("Hook page opened in browser...")
                 print(f"Check BeEF panel at: http://{beefip}/ui/panel")
                 logging.info(f"Created beef hook page for {beefip}")
