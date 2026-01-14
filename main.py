@@ -82,7 +82,7 @@ permapath = r'[Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";C:\Win
 run_ps(permapath)
 
 #define powershell path
-pspath = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
+pspath = r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 print(Fore.YELLOW + "!!!THIS PROGRAM IS NEEDED TO "+ Fore.RED + "RUN VIA CMD WITH ADMIN PRIVILEGES " + Fore.YELLOW + "TO RUN PROPERLY!!!")
 sleep(4)
@@ -94,7 +94,7 @@ scanverify = "no"
 logging.info(f"Program accessed with correct password")
 
 cls()
-ascii_art = """
+ascii_art = r"""
  __  __  ___  _     _____
 |  \/  |/ _ \| |   | ____|
 | |\/| | | | | |   |  _|
