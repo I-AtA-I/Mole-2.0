@@ -14,7 +14,7 @@ It is a tunnelmaker like tool that can help you in exploiting a system and retri
 
 Warning!:
 -
-!!!On attacker site you need to allow "GatewayPorts" (GatewayPorts yes) and "AllowTcpForwarding" (AllowTcpForwarding yes) 
+!!!On attacker side you need to allow "GatewayPorts" (GatewayPorts yes) and "AllowTcpForwarding" (AllowTcpForwarding yes) 
 in 
 etc/ssh/sshd_config!!!
 
