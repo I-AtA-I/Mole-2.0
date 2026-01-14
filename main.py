@@ -1142,6 +1142,3 @@ while True:
         sleep(0.1)
         input("Press Enter to continue...")
         cls()
-
-print_line()
-print("Thank you for using Mole 2.0, exiting now...")
