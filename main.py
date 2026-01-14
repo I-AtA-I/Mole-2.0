@@ -22,24 +22,6 @@ from datetime import datetime, timedelta
 import json
 import win32crypt # type: ignore
 
-while True:
-    cls()
-    asktolog=input("Enable logging? y/n: ")
-    if asktolog == "y" or asktolog == "Y":
-        print("Logging enabled")
-        logging.basicConfig(
-            filename="logger.log",     # log file name
-            level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
-            format="%(asctime)s - %(levelname)s - %(message)s"
-        )
-        break
-    elif asktolog == "n" or asktolog == "N":
-        print("Logging disabled")
-        break
-    else:
-        print("Invalid input, please enter y or n")
-        sleep(1)
-
 
 CONFIG_FILE = "config.json"
 
@@ -70,6 +52,27 @@ while True:
         break
     else:
         print("Incorrect password.")
+
+
+while True:
+    cls()
+    asktolog=input("Enable logging? y/n: ")
+    if asktolog == "y" or asktolog == "Y":
+        print("Logging enabled")
+        logging.basicConfig(
+            filename="logger.log",     # log file name
+            level=logging.INFO,             # log level (INFO, DEBUG, ERROR)
+            format="%(asctime)s - %(levelname)s - %(message)s"
+        )
+        break
+    elif asktolog == "n" or asktolog == "N":
+        print("Logging disabled")
+        break
+    else:
+        print("Invalid input, please enter y or n")
+        sleep(1)
+
+
 
 
 logging.info(f"Program started")
@@ -153,19 +156,28 @@ while True:
         ]
     }
 
+
     def print_menu():
         for category, items in MENU.items():
-            print(category + ":")
-            print("-" * len(category))
+        # Section header with a subtle background
+            print(Back.BLACK + Fore.MAGENTA + Style.BRIGHT + f" {category} " + Style.RESET_ALL)
+
+        # Separator
+            print(Fore.LIGHTBLACK_EX + "-" * len(category))
+
+        # Items
             for item in items:
-                print("  " + item)
+                print(Fore.WHITE + "  " + item)
+
             print()
+
+
 
     print_menu()
     print_line()
     sleep(0.1)
     print("")
-    action = input("M0L€> " + "")
+    action = input(Fore.MAGENTA+"M0L€> " + Fore.RESET + " ")
     cls()
 
     
