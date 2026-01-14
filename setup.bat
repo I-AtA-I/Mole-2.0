@@ -8,6 +8,5 @@ winget install Wireshark --accept-source-agreements --accept-package-agreements
 
 python main.py
 
-
 start cmd /k
 exit

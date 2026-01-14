@@ -1142,6 +1142,3 @@ while True:
         sleep(0.1)
         input("Press Enter to continue...")
         cls()
-
-
-print("Exiting Mole...")
