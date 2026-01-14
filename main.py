@@ -35,15 +35,16 @@ def hash_pw(pw):
 
 def get_password_hash():
     if not os.path.exists(CONFIG_FILE):
-        # First run: ask user to set password
         pw = getpass.getpass("Set a new password: ")
+        hashed = hash_pw(pw)
         with open(CONFIG_FILE, "w") as f:
-            json.dump({"password_hash": hash_pw(pw)}, f)
+            json.dump({"password_hash": hashed}, f)
         print("Password saved.")
-        return hashed_pw
+        return hashed
     else:
         with open(CONFIG_FILE) as f:
             return json.load(f)["password_hash"]
+
 
 stored_hash = get_password_hash()
 
