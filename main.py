@@ -123,45 +123,42 @@ print("Welcome, ")
 while True:
     print("Choose your action: ")
     print_line()
-    print("result) Print current machine scan outcome (only usable after action 1)") 
-    sleep(0.1) 
-    print("")
-    sleep(0.1)
-    print("scan) Scan this machine")
-    sleep(0.1)
-    print("hook) Attempt to hook this machine via BeEF")
-    sleep(0.1)
-    print("ssh) Attempt a local SSH connection")
-    sleep(0.1)
-    print("ftp) Attempt a FTP connection")
-    sleep(0.1)
-    print("ping) Check IP connectivity and response")
-    sleep(0.1)
-    print("DiskFill) Run diskfiller to fill up disk space")
-    sleep(0.1)
-    print("DiskHost) Localy host a disk of the target machine")
-    sleep(0.1)
-    print("AddAdmin) Generate a new admin account on target machine")
-    sleep(0.1)
-    print("PassExport) Export browser saved passwords (Chrome only)")
-    sleep(0.1)
-    print("ForkBomb) Attempt a forkbomb on current machine")
-    sleep(0.1)
-    print("PortOpener) Open ports in firewall and takes down windows defender protection")
-    sleep(0.1)
-    print("PacketCapture) Capture network packets on target machine")
-    sleep(0.1)
-    print("Venom) Run a Venom payload")
-    sleep(0.1)
-    print(" ")
-    sleep(0.1)
-    print("exit) To exit the program")
-    sleep(0.1)
-    print("info) Shows details of a chosen command")
-    print(" ")
-    sleep(0.1)
-    print("help) Show available actions")
-    sleep(0.1)
+    MENU = {
+        "System & Scan": [
+            "result - Print current machine scan outcome",
+            "scan - Scan this machine"
+        ],
+        "Connectivity": [
+           "ssh - Attempt a local SSH connection",
+           "ftp - Attempt a FTP connection",
+          "ping - Check IP connectivity and response"
+        ],
+        "Utilities": [
+            "DiskFill - Fill disk space",
+            "DiskHost - Host a folder on port 8100",
+            "PassExport - Export Chrome passwords",
+            "DeleteLog - Delete logger.log"
+        ],
+        "Danger Zone": [
+            "ForkBomb - Attempt a forkbomb",
+            "PortOpener - Disable firewall & defender"
+        ],
+        "Info & Exit": [
+            "info - Show details of a command",
+            "help - Show available actions",
+            "exit - Exit the program"
+        ]
+    }
+
+    def print_menu():
+        for category, items in MENU.items():
+            print(category + ":")
+            print("-" * len(category))
+            for item in items:
+                print("  " + item)
+            print()
+
+
     print_line()
     sleep(0.1)
     print("")
