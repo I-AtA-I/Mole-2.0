@@ -1114,6 +1114,84 @@ while True:
 		input("\nPress Enter to continue...")
 		cls()
 
+
+	if action == "NetworkPass" or action == "networkpass":
+		logging.info(f"Chosen action NetworkPass to extract network passwords")
+		print(Fore.YELLOW + "[*] Extracting network information (passwords are encrypted)...")
+		
+		output_lines = []
+		
+		# 1. Use CMDKEY with full path
+		print(Fore.CYAN + "\n[1] Windows Credential Manager:")
+		cmdkey_path = r"C:\Windows\System32\cmdkey.exe"
+		result = subprocess.run([cmdkey_path, "/list"], capture_output=True, text=True)
+		
+		if result.stdout:
+			print(Fore.GREEN + "[+] Stored credentials found:")
+			print(result.stdout)
+			output_lines.append("=== CREDENTIAL MANAGER ===\n" + result.stdout)
+		else:
+			print(Fore.YELLOW + "[!] No stored credentials")
+			output_lines.append("=== CREDENTIAL MANAGER ===\nNone found")
+		
+		# 2. Use NET USE with full path
+		print(Fore.CYAN + "\n[2] Mapped Network Drives:")
+		net_path = r"C:\Windows\System32\net.exe"
+		result = subprocess.run([net_path, "use"], capture_output=True, text=True)
+		
+		if result.stdout and "New connections" in result.stdout:
+			print(Fore.GREEN + "[+] Mapped drives found:")
+			print(result.stdout)
+			output_lines.append("\n=== MAPPED DRIVES ===\n" + result.stdout)
+		else:
+			print(Fore.YELLOW + "[!] No mapped drives")
+			output_lines.append("\n=== MAPPED DRIVES ===\nNone found")
+		
+		# 3. Get WiFi profiles (if any)
+		print(Fore.CYAN + "\n[3] WiFi Profiles:")
+		try:
+			netsh_path = r"C:\Windows\System32\netsh.exe"
+			result = subprocess.run([netsh_path, "wlan", "show", "profiles"], capture_output=True, text=True)
+			
+			if result.stdout and "All User Profile" in result.stdout:
+				profiles = []
+				for line in result.stdout.split('\n'):
+					if "All User Profile" in line:
+						profile = line.split(":")[1].strip()
+						profiles.append(profile)
+				
+				print(Fore.GREEN + f"[+] Found {len(profiles)} WiFi profiles")
+				print(", ".join(profiles[:10]))
+				output_lines.append(f"\n=== WIFI PROFILES ===\nFound {len(profiles)} profiles")
+			else:
+				print(Fore.YELLOW + "[!] No WiFi profiles")
+				output_lines.append("\n=== WIFI PROFILES ===\nNone found")
+		except:
+			print(Fore.YELLOW + "[!] Could not check WiFi")
+		
+		# 4. Save results
+		output_file = f"network_info_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+		with open(output_file, 'w') as f:
+			f.write("="*60 + "\n")
+			f.write("NETWORK INFORMATION DUMP\n")
+			f.write("="*60 + "\n\n")
+			f.write(f"Time: {datetime.now()}\n")
+			f.write(f"Machine: {platform.node()}\n")
+			f.write(f"User: {os.environ.get('USERNAME', 'Unknown')}\n\n")
+			
+			for line in output_lines:
+				f.write(line + "\n")
+		
+		print(Fore.GREEN + f"\n[+] Results saved to {output_file}")
+		print(Fore.YELLOW + "\n[*] Note: Windows encrypts passwords with DPAPI")
+		print(Fore.YELLOW + "[*] For actual password extraction, use tools like:")
+		print(Fore.CYAN + "    • Mimikatz (requires admin)")
+		print(Fore.CYAN + "    • Lazagne")
+		print(Fore.CYAN + "    • Windows Credential Manager UI")
+		
+		input("\nPress Enter to continue...")
+		cls()
+
 #Action exit = exiting the program
 	if action == "exit":
 		logging.info(f"Chosen action PassExport to exit the program")
