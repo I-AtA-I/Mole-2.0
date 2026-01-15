@@ -291,17 +291,16 @@ while True:
 	if action == "result":
 		logging.info(f"Chosen action result to print system information")
 		if scanverify == "yes":
-		   info()
-		   logging.info(f"System info printed out")
-		   input("Press Enter to continue...")
-		   cls()
+			info()
+			logging.info(f"System info printed out")
+			input("Press Enter to continue...")
+			cls()
 		else:
 			cls()
 			print("Scan was not initiated (action 'scan'), run scan first")
-			logging.error(f"Scan not initiated, action 0 cannot proceed")
+			logging.error(f"Scan not initiated, action 'scan' cannot proceed")
 			sleep(4)
-	else:
-		print("")
+
 		
 #
 #
