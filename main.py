@@ -1388,6 +1388,30 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
+	elif action == "info WifiCrack" or action == "info wificrack":
+		print("WifiCrack) Extract WiFi passwords: retrieves saved WiFi profiles and their passwords from the system, saves results to a JSON file") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info NetScan" or action == "info netscan":
+		print("NetScan) Extract network passwords: retrieves stored network credentials from Windows Credential Manager and mapped network drives, saves results to a text file") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info help":
+		print("help) Show available actions and their descriptions: displays a list of all available commands and brief explanations of what each action does") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
 	else:
 		print("Invalid action, please choose a valid command or select 'help' to see available actions.")
 		sleep(0.1)
