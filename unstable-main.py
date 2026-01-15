@@ -164,6 +164,9 @@ while True:
 			"WifiCrack - Attempt to crack WiFi passwords",
 			"Hook - Attempt to hook this machine via BeEF"
 		],
+		"Detectible Operations": [
+			"AllPass - Export all found saved passwords",
+		],
 		"Support & Exit": [
 			"info - Show details of a command",
 			"help - Show available actions",
@@ -288,6 +291,10 @@ while True:
 		print("")
 		sleep(0.1)
 		print("WifiCrack) Attempt to crack WiFi passwords: tries to retrieve and crack saved WiFi passwords on the target machine")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
+		print("AllPass) Export all found saved passwords from multiple browsers: retrieves and decrypts saved passwords from various browsers")
 		sleep(0.1)
 		print("")
 		sleep(0.1)
@@ -1633,8 +1640,6 @@ while True:
 			count = all_results["extractions"][category].get("count", "N/A")
 			print(Fore.WHITE + f"  • {category}: {count}")
 		
-		print(Fore.YELLOW + "\n[*] Note: Windows/Firefox passwords are encrypted")
-		print(Fore.YELLOW + "[*] Use Mimikatz for Windows password extraction")
 		
 		input(Fore.CYAN + "\nPress Enter to continue...")
 		cls()
@@ -1781,6 +1786,14 @@ while True:
 
 	elif action == "info NetScan" or action == "info netscan":
 		print("NetScan) Extract network passwords: retrieves stored network credentials from Windows Credential Manager and mapped network drives, saves results to a text file") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info AllPass" or action == "info allpass":
+		print("AllPass) Extract ALL passwords: performs a comprehensive extraction of saved passwords from multiple sources including Chrome, Edge, WiFi, Windows Credential Manager, and Firefox (encrypted), saves results to a JSON file and a summary text file") 
 		sleep(0.1) 
 		print("")
 		sleep(0.1)
