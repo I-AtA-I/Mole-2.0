@@ -1207,7 +1207,7 @@ while True:
         input("Press Enter to continue...")
         cls()
 
-    if action == "info LogDelete" or action == "info logdelete":
+    if action == "info DeleteLog" or action == "info deletelog":
         print("LogDelete) Delete the program log file: removes the logger.log file created by the program to store logs") 
         sleep(0.1) 
         print("")
