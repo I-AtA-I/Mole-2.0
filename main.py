@@ -909,6 +909,10 @@ while True:
 		sleep(0.1)
 		print("")
 		sleep(0.1)
+		print("RAT) Deploy Meterpreter-style Remote Access Tool: launches a remote access tool with Meterpreter-like capabilities")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
 		print("exit) To exit the program")
 		sleep(0.1)
 		print("")
@@ -2434,6 +2438,14 @@ while True:
 
 	elif action == "info help":
 		print("help) Show available actions and their descriptions: displays a list of all available commands and brief explanations of what each action does") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info RAT" or action == "info rat":
+		print("RAT) Remote Access Trojan setup: sets up a RAT using custom program 'Cheder'") 
 		sleep(0.1) 
 		print("")
 		sleep(0.1)
