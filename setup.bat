@@ -1,21 +1,54 @@
 @echo off
+echo ================================
+echo      MOLE - TURBO INSTALLER
+echo ================================
+echo.
 
-winget install python3 --accept-source-agreements --accept-package-agreements
-python -m pip install pycryptodome
-python -m pip install pywin32
-python -m pip install pypiwin32
-winget install Wireshark --accept-source-agreements --accept-package-agreements
+:: 1. CHECK/INSTALL PYTHON (SILENT)
+echo [1] Checking Python...
+where python >nul 2>nul
+if errorlevel 1 (
+    echo   Installing Python...
+    winget install Python.Python.3.11 --silent --accept-package-agreements >nul 2>&1
+)
 
-python -m pip install colorama
-python -m pip install pynput
-python -m pip install opencv-python
-python -m pip install numpy
-python -m pip install sounddevice
-python -m pip install soundfile
-python -m pip install psutil
-python -m pip install mss
+:: 2. UPGRADE PIP (CRITICAL FOR SPEED)
+echo [2] Upgrading pip...
+python -m pip install --upgrade pip --quiet >nul 2>&1
 
+:: 3. INSTALL ALL PACKAGES AT ONCE (THIS IS THE FAST PART)
+echo [3] Installing ALL packages in one command...
+echo    This is faster than installing one by one...
+python -m pip install colorama pywin32 pycryptodome pynput opencv-python numpy sounddevice soundfile psutil mss pillow --quiet --disable-pip-version-check
+
+:: 4. INSTALL WIRESHARK (SILENT)
+echo [4] Installing Wireshark (optional)...
+where dumpcap >nul 2>nul
+if errorlevel 1 (
+    winget install WiresharkFoundation.Wireshark --silent --accept-package-agreements >nul 2>&1
+    echo   Wireshark installed
+) else (
+    echo   Wireshark already installed
+)
+
+:: 5. QUICK VERIFICATION
+echo [5] Verifying installs...
+python -c "
+try:
+    import colorama, win32crypt, pynput, cv2
+    from Crypto.Cipher import AES
+    print('  SUCCESS: Core packages installed')
+except ImportError as e:
+    print('  WARNING: Missing:', str(e))
+"
+
+:: 6. LAUNCH
+echo.
+echo ================================
+echo        READY TO ROCK
+echo ================================
+echo.
+timeout /t 2 >nul
 python main.py
 
-start cmd /k
-exit
+pause
