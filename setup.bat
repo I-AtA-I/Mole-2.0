@@ -1,6 +1,6 @@
 @echo off
 echo ================================
-echo      MOLE - TURBO INSTALLER
+echo      MOLE - INSTALLER
 echo ================================
 echo.
 
@@ -45,7 +45,7 @@ except ImportError as e:
 :: 6. LAUNCH
 echo.
 echo ================================
-echo        READY TO ROCK
+echo        READY TO USE
 echo ================================
 echo.
 timeout /t 2 >nul
