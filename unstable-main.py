@@ -792,7 +792,8 @@ while True:
 			"PacketCapture - Capture network packets",
 			"Venom - Run a Venom payload",
 			"WifiCrack - Attempt to crack WiFi passwords",
-			"Hook - Attempt to hook this machine via BeEF"
+			"Hook - Attempt to hook this machine via BeEF",
+			"RegistryExport - Export registry hives"
 		],
 		"Remote Access": [
 			"RAT - Deploy Meterpreter-style Remote Access Tool",
@@ -910,6 +911,10 @@ while True:
 		print("")
 		sleep(0.1)
 		print("RAT) Deploy Meterpreter-style Remote Access Tool: launches a remote access tool with Meterpreter-like capabilities")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
+		print("RegistryExport) Export registry hives: exports the Windows registry hives for offline analysis")
 		sleep(0.1)
 		print("")
 		sleep(0.1)
@@ -1278,13 +1283,7 @@ while True:
 #Action DiskFiller = filling up disk space
 	elif action == "DiskFill" or action == "diskfill":
 		logging.info(f"Chose action DiskFill to fill a target computer disk")
-		usermovefile=input("Did you move the installed files from each other? (meaning this program being somewhere different than the other files included in this repo? y/n: ")
-		if usermovefile == "y":
-			pathtodiskfiller=input("Enter path to diskfiller.bat (example d:\\filler\\diskfiller.bat), will be in the same folder as this program: ")
-			subprocess.run(pathtodiskfiller, shell=True)
-		else:
-			subprocess.run("diskfiller.bat", shell=True)
-
+		subprocess.run('"modules\diskfiller.bat"', shell=True)
 		logging.info(f"Started the diskfiller.bat")
 	
 #
@@ -2288,6 +2287,11 @@ while True:
 		sleep(3)
 		exit()
 
+	elif action == "RegistryExport" or action == "registryexport":
+		logging.info(f"Chosen action RegistryExport to export registry hives")
+		subprocess.run('"modules\RegisterSaver.bat', shell=True)
+
+
 	# ========== INFO COMMANDS ==========
 #INFOS!
 	
@@ -2446,6 +2450,14 @@ while True:
 
 	elif action == "info RAT" or action == "info rat":
 		print("RAT) Remote Access Trojan setup: sets up a RAT using custom program 'Cheder'") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info RegistryExport" or action == "info registryexport":
+		print("RegistryExport) Export registry hives: runs a batch script to export Windows registry hives for analysis") 
 		sleep(0.1) 
 		print("")
 		sleep(0.1)
