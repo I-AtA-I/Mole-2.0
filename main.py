@@ -2488,7 +2488,7 @@ while True:
 		cls()
 
 	elif action == "info RAT" or action == "info rat":
-		print("RAT) Remote Access Trojan setup: sets up a RAT using custom program 'Cheder'") 
+		print("RAT) Remote Access Trojan setup: sets up a RAT using custom program 'Cheddar'") 
 		sleep(0.1) 
 		print("")
 		sleep(0.1)
