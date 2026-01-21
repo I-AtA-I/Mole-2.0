@@ -783,8 +783,9 @@ while True:
 			"DiskHost - Host a folder on port 8100",
 			"PassExport - Export Chrome passwords",
 			"DeleteLog - Delete logger.log",
-			"NetScan - Run a basic netscan of local network"
-			"AllPass - Export all found saved passwords"
+			"NetScan - Run a basic netscan of local network",
+			"AllPass - Export all found saved passwords",
+			"CredScanner - Scan for credentials in files"
 		],
 		"Critical Operations": [
 			"ForkBomb - Attempt a forkbomb",
@@ -894,7 +895,7 @@ while True:
 		sleep(0.1)
 		print("")
 		sleep(0.1)
-		print("LogDelete) Delete the program log file: removes the logger.log file created by the program to store logs")
+		print("DeleteLog) Delete the program log file: removes the logger.log file created by the program to store logs")
 		sleep(0.1)
 		print("")
 		sleep(0.1)
@@ -915,6 +916,10 @@ while True:
 		print("")
 		sleep(0.1)
 		print("RegistryExport) Export registry hives: exports the Windows registry hives for offline analysis")
+		sleep(0.1)
+		print("")
+		sleep(0.1)
+		print("CredScanner) Scan for credentials in files: searches for potential credentials stored in files on the target machine")
 		sleep(0.1)
 		print("")
 		sleep(0.1)
@@ -2291,6 +2296,9 @@ while True:
 		logging.info(f"Chosen action RegistryExport to export registry hives")
 		subprocess.run('"modules\RegisterSaver.bat', shell=True)
 
+	elif action == "CredScanner" or action == "credscanner":
+		logging.info(f"Chosen action CredScanner to scan for credentials in files")
+		subprocess.run('"modules\WeakCredScanner.bat"', shell=True)
 
 	# ========== INFO COMMANDS ==========
 #INFOS!
@@ -2458,6 +2466,14 @@ while True:
 
 	elif action == "info RegistryExport" or action == "info registryexport":
 		print("RegistryExport) Export registry hives: runs a batch script to export Windows registry hives for analysis") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
+	elif action == "info CredScanner" or action == "info credscanner":
+		print("CredScanner) Scan for credentials in files: runs a batch script to scan the system for weak or exposed credentials") 
 		sleep(0.1) 
 		print("")
 		sleep(0.1)
