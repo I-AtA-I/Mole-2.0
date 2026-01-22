@@ -3,7 +3,7 @@ import os
 def cls():
 	os.system("cls")
 
-from colorama import init, Fore, Back, Style
+from colorama import init, Fore, Back, Style # type: ignore
 init(autoreset=True)
 
 import hashlib
@@ -2324,6 +2324,20 @@ while True:
 		
 		input(Fore.CYAN + "\nPress Enter to continue...")
 		cls()
+
+
+	elif action == "CredScan" or action == "credscan":
+		logging.info("Chosen action CredScan to scan for weak credentials")
+		credpath = os.path.join(base_dir, "modules", "credscan.bat")
+		subprocess.run([credpath], shell=True)
+		cls()
+
+	elif action == "RegSave" or action == "regsave":
+		logging.info("Chosen action RegSave to save registry hives")
+		savepath = os.path.join(base_dir, "modules", "regsave.bat")
+		subprocess.run([savepath], shell=True)
+		cls()
+
 
 	elif action == "exit":
 		logging.info(f"Chosen action exit to exit the program")
