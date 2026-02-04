@@ -1874,8 +1874,8 @@ while True:
 
 
 	elif action == "NetScan" or action == "netscan":
-		logging.info(f"Chosen action NetworkPass to extract network passwords")
-		print(Fore.YELLOW + "[*] Extracting network information (passwords are encrypted)...")
+		logging.info(f"Chosen action 'NetScan' to scan the network")
+		print(Fore.YELLOW + "[*] Extracting network information...")
 		
 		output_lines = []
 		
