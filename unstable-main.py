@@ -1611,7 +1611,7 @@ while True:
 			
 			# Save to JSON
 			if all_results:
-				filename = f"chrome_passwords.json"
+				filename = f"results/chrome_passwords.json"
 				
 				output_data = {
 					"metadata": {
@@ -1874,7 +1874,7 @@ while True:
 
 
 	elif action == "NetScan" or action == "netscan":
-		logging.info(f"Chosen action 'NetScan' to scan the network")
+		logging.info(f"Chosen action NetScan to scan the network")
 		print(Fore.YELLOW + "[*] Extracting network information...")
 		
 		output_lines = []
@@ -2339,6 +2339,34 @@ while True:
 		savepath = os.path.join(base_dir, "modules", "regsave.bat")
 		subprocess.run([savepath], shell=True)
 		cls()
+
+	elif action == "CleanUp" or action == "cleanup":
+		logging.info("Chosen action 'CleanUp' to clean the 'results' folder")
+		choosefile=input("Which files to delete?: [A]ll, [R]egSave, [C]redScan, [W]ifiCrack, [Pass]Export, [N]etScan, [P]acketCapture: ")
+		if choosefile == "A" or choosefile == "a":
+			logging.info("User chose 'A' to delete the whole folder")
+			Adelete="rmdir base_dir/modules"
+			subprocess.run([Adelete] shell=True)
+		elif choosefile == "R" or choosefile == "r":
+			logging.info("User chose 'R' to delete the 'RegSave' action result folder")
+			Rdelete="rmdir base_dir/results/RegSaver"
+			subprocess.run([Rdelete] shell=True)
+        elif choosefile == "C" or choosefile == "c":
+            logging.info("User chose 'C' to delete the 'CredScan' action result file")
+			Cdelete="del base_dir/results/CredScan.json"
+			subprocess.run([Cdelete] shell=True)
+        elif choosefile == "W" or choosefile == "w":
+            logging.info("User chose 'W' to delete the 'WifiCrack' action result file")
+			Wdelete="del base_dir/results/WifiCrack.json"
+			subprocess.run([Wdelete] shell=True)
+        elif choosefile == "Pass" or choosefile == "pass":
+            logging.info("User chose 'Pass' to delete the 'PassExport' action result file")
+			Passdelete="del base_dir/results/chrome_passwords.json"
+			subprocess.run([Passdelete] shell=True)
+        elif choosefile == "N" or choosefile == "n":
+            logging.info("User chose 'N' to delete the 'NetScan' action result file")
+			Ndelete="del base_dir/results/NetScan.json"
+			subprocess.run([Ndelete] shell=True)
 
 
 	elif action == "exit":
