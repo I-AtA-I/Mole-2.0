@@ -15,7 +15,7 @@ set "MAIN_DIR=%~dp0..\"
 cd /d "%MAIN_DIR%"
 set "OUTPUT_DIR=Results\CredScan"
 mkdir "%OUTPUT_DIR%" 2>nul
-set "JSON_FILE=%OUTPUT_DIR%\scan_results.json"
+set "JSON_FILE=%OUTPUT_DIR%\CredScan.json"
 
 :: Initialize variables for JSON
 set "JSON_LINES=0"
